@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAm2vpnqB_zGp1hQ6xZmpOJjo5zxJsMaE&libraries=geometry"></script>
+    
+    <title>ElTaksi - Haydovchi</title>
+    <style>
+        :root { --midnight: #0f172a; --gold: #fbbf24; --green: #22c55e; --red: #ef4444; --slate: #1e293b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #070b14; display: flex; justify-content: center; min-height: 100vh; color: white; overflow-x: hidden; }
+
+        .mobile-container {
+            width: 100%; max-width: 450px; background: var(--midnight);
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* Navigator Xaritasi */
+        #map-container { 
+            display: none; height: 300px; width: 100%; border-bottom: 2px solid var(--gold); 
+            z-index: 10; background: #111;
+        }
+        #map { height: 100%; width: 100%; }
+
+        .header {
+            padding: 15px 20px; background: rgba(255,255,255,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+        }
+        .driver-info h4 { color: var(--gold); font-size: 1rem; }
+        .driver-info p { font-size: 0.8rem; color: #94a3b8; }
+        .sub-date { font-size: 0.7rem; color: var(--gold); display: block; margin-top: 2px; opacity: 0.8; }
+
+        .switch { position: relative; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #334155; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--green); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Taksometr */
+        .taximeter-section { padding: 20px; text-align: center; }
+        .taximeter-box {
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.08), rgba(15, 23, 42, 0.2));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 25px; padding: 20px;
+        }
+        .price { font-size: 3.5rem; font-weight: 800; color: var(--gold); line-height: 1; text-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+        .currency { color: #94a3b8; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 15px; display: block; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-start { background: var(--green); color: white; }
+        .btn-stop { background: var(--red); color: white; }
+
+        .active-order-info {
+            display: none; background: #1e293b; margin: 15px 20px 0 20px; padding: 15px; border-radius: 15px;
+            border: 1px solid var(--gold); animation: slideIn 0.3s ease;
+        }
+        .contact-btns { display: flex; gap: 8px; margin-top: 10px; }
+        .call-btn { flex: 1; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 10px; border-radius: 10px; font-weight: bold; font-size: 0.85rem; }
+        .chat-btn { flex: 1; background: var(--slate); color: white; border: 1px solid #475569; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+
+        .orders-container { flex: 1; padding: 20px; display: none; overflow-y: auto; }
+        .section-title { font-size: 0.75rem; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .order-card {
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 4px solid var(--gold); margin-bottom: 10px;
+        }
+        .order-card b { display: block; font-size: 0.95rem; color: white; }
+        .order-card span { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 4px; }
+        .dist-tag { font-size: 0.7rem; color: var(--gold); font-weight: bold; margin-bottom: 4px; display: block; }
+        .qabul-btn { background: var(--gold); color: black; border: none; padding: 12px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+
+        #orderModal, #finishModal {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(5px);
+        }
+        .modal-content { background:#1e293b; width:85%; padding:25px; border-radius:20px; text-align:center; border:1px solid var(--gold); }
+        .receipt-card { background: white; width: 85%; padding:25px; border-radius:20px; text-align:center; color: black; }
+
+        .stats-footer { display: flex; justify-content: space-around; padding: 15px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); }
+        .stat-item { text-align: center; }
+        .stat-item small { color: #64748b; font-size: 0.65rem; display: block; }
+        .stat-item b { color: var(--gold); font-size: 0.9rem; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="header">
+            <div class="driver-info">
+                <h4><%= driver.driverName %></h4>
+                <p><%= driver.carModel %> | <%= driver.carNumber %></p>
+                <span class="sub-date">📅 Obuna: <%= new Date(driver.subscriptionUntil).toLocaleDateString() %> gacha</span>
+                <small id="queue-status" style="color: var(--green); font-size: 0.7rem; font-weight: bold;"></small>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="online-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="active-order-info" id="activeOrderBox">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <small style="color: #94a3b8;">MIJOZ:</small>
+                    <h3 id="activeClientName" style="color: white; margin: 2px 0;">---</h3>
+                    <p id="activeClientAddr" style="font-size: 0.75rem; color: #cbd5e1;">---</p>
+                </div>
+                <div style="text-align: right;">
+                    <b id="activeClientDist" style="color: var(--gold); font-size: 1.1rem;">0.0 km</b>
+                </div>
+            </div>
+            <div class="contact-btns">
+                <a href="#" id="callClientBtn" class="call-btn">📞 QO'NG'IROQ</a>
+                <button class="chat-btn" onclick="sendQuickMsg()">💬 KELDIM</button>
+            </div>
+        </div>
+
+        <div class="taximeter-section">
+            <div class="taximeter-box">
+                <div class="price" id="cost">0</div>
+                <span class="currency">SUM</span>
+                <div class="btn-group">
+                    <button class="btn btn-start" id="startBtn" onclick="startRide()" style="display:none;">BOSHLASH</button>
+                    <button class="btn btn-stop" id="stopBtn" onclick="stopRide()" style="display:none;">TUGATISH</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="orders-container" id="orders-box">
+            <p class="section-title">Yangi buyurtmalar</p>
+            <div id="orders-list"></div>
+        </div>
+
+        <div class="stats-footer">
+            <div class="stat-item"><small>BUGUN</small><b id="stat-money"><%= driver.statistics.todayEarned.toLocaleString() %></b></div>
+            <div class="stat-item"><small>SAFARLAR</small><b id="stat-trips"><%= driver.statistics.totalTrips %></b></div>
+            <div class="stat-item"><small>REYTING</small><b>5.0 ⭐</b></div>
+        </div>
+    </div>
+
+    <div id="orderModal">
+        <div class="modal-content">
+            <h3 style="color:var(--gold); margin-bottom:15px;">Yangi Buyurtma! 🚕</h3>
+            <p id="modalText" style="color:white; font-size:0.9rem; margin-bottom:20px; line-height:1.6;"></p>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" onclick="closeModal()" style="background:#475569; color: white;">YOPISH</button>
+                <button class="btn btn-start" id="confirmRideBtn">QABUL QILISH</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="finishModal">
+        <div class="receipt-card">
+            <div style="font-size: 2.5rem;">✅</div>
+            <h2 style="margin: 10px 0;">Safar Tugadi!</h2>
+            <div style="border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 15px 0; margin: 15px 0;">
+                <p>Masofa: <b id="final-dist">0</b> km</p>
+                <p>Summa: <b id="final-amount" style="color: var(--green); font-size: 1.4rem;">0</b></p>
+            </div>
+            <button class="btn btn-start" style="width: 100%;" onclick="closeFinishModal()">YOPISH</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const driverId = '<%= driver._id %>';
+        let isOnline = false, watchId = null, totalDistance = 0, lastCoords = null, money = 0;
+        const pricePerKm = 2500;
+        const MIN_DISTANCE_THRESHOLD = 0.015;
+
+        // Google Maps obyektlari
+        let map = null, driverMarker = null, clientMarker = null, directionsService, directionsRenderer;
+
+        function initGoogleMap() {
+            if (map) return;
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true, // Markerlarni o'zimiz qo'yamiz (chiroyli bo'lishi uchun)
+                polylineOptions: { strokeColor: "#3b82f6", strokeWeight: 6, strokeOpacity: 0.9 }
+            });
+
+            const initialPos = { lat: 41.2995, lng: 69.2401 };
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15,
+                center: initialPos,
+                disableDefaultUI: true,
+                styles: [
+                    { "featureType": "all", "elementType": "all", "stylers": [{ "invert_lightness": true }, { "saturation": 10 }, { "lightness": 30 }, { "gamma": 0.5 }, { "hue": "#435158" }] }
+                ]
+            });
+
+            directionsRenderer.setMap(map);
+            
+            // Haydovchi markeri (Sariq nuqta)
+            driverMarker = new google.maps.Marker({
+                position: initialPos,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: "#fbbf24",
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: "white"
+                },
+                title: "Men"
+            });
+        }
+
+        document.getElementById('online-switch').addEventListener('change', function() {
+            isOnline = this.checked;
+            document.getElementById('orders-box').style.display = isOnline ? 'block' : 'none';
+            if (isOnline) {
+                socket.emit('driver_online', { driverId: driverId });
+                startLocationTracking();
+            } else {
+                socket.emit('driver_offline', { driverId: driverId });
+                document.getElementById('queue-status').innerText = "";
+            }
+        });
+
+        function startLocationTracking() {
+            navigator.geolocation.watchPosition((pos) => {
+                const { latitude, longitude } = pos.coords;
+                if (!map) initGoogleMap();
+                
+                const newPos = { lat: latitude, lng: longitude };
+                driverMarker.setPosition(newPos);
+                socket.emit('update_location', { driverId: driverId, lat: latitude, lon: longitude });
+            }, null, { enableHighAccuracy: true });
+        }
+
+        socket.on('queue_position', (data) => {
+            document.getElementById('queue-status').innerText = "Navbat: " + data.position;
+        });
+
+        socket.on('push_order_to_drivers', (data) => {
+            if (!isOnline) return;
+            
+            const driverLatLng = driverMarker.getPosition();
+            const clientLatLng = new google.maps.LatLng(data.lat, data.lon);
+            const distInMeters = google.maps.geometry.spherical.computeDistanceBetween(driverLatLng, clientLatLng);
+            const distToClient = (distInMeters / 1000).toFixed(1);
+
+            const ordersList = document.getElementById('orders-list');
+            const newOrder = document.createElement('div');
+            newOrder.className = 'order-card';
+            newOrder.innerHTML = `
+                <div>
+                    <span class="dist-tag">📍 ${distToClient} km uzoqlikda</span>
+                    <b>Mijoz: ${data.clientName}</b>
+                    <span>${data.detail}</span>
+                </div>
+                <button class="qabul-btn" onclick="showOrderDetails('${data.clientName}', '${data.detail}', ${data.lat}, ${data.lon}, '${distToClient}', '${data.phone}')">QABUL</button>
+            `;
+            ordersList.prepend(newOrder);
+            playAlertSound();
+        });
+
+        function showOrderDetails(name, address, lat, lon, dist, phone) {
+            const modal = document.getElementById('orderModal');
+            document.getElementById('modalText').innerHTML = `<b>Mijoz:</b> ${name}<br><b>Masofa:</b> ${dist} km<br><b>Manzil:</b> ${address}`;
+            modal.style.display = 'flex';
+            document.getElementById('confirmRideBtn').onclick = () => {
+                closeModal();
+                acceptOrder(name, address, lat, lon, dist, phone);
+            };
+        }
+
+        function acceptOrder(name, address, lat, lon, dist, phone) {
+            socket.emit('accept_order', { driverId: driverId });
+            
+            document.getElementById('map-container').style.display = 'block';
+            document.getElementById('activeOrderBox').style.display = 'block';
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('activeClientName').innerText = name;
+            document.getElementById('activeClientAddr').innerText = address;
+            document.getElementById('activeClientDist').innerText = dist + " km";
+            document.getElementById('callClientBtn').href = `tel:${phone}`;
+            
+            initGoogleMap();
+            
+            const driverPos = driverMarker.getPosition();
+            const clientPos = new google.maps.LatLng(lat, lon);
+
+            // MIJOZ MARKERINI QO'SHISH (Qizil nuqta)
+            if (clientMarker) clientMarker.setMap(null);
+            clientMarker = new google.maps.Marker({
+                position: clientPos,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                    scale: 6,
+                    fillColor: "#ef4444",
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: "white"
+                },
+                title: "Mijoz"
+            });
+
+            // Marshrutni hisoblash va chizish
+            const request = {
+                origin: driverPos,
+                destination: clientPos,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                } else {
+                    console.error("Navigator xatosi: " + status);
+                }
+            });
+        }
+
+        function startRide() {
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('startBtn').style.display = "none";
+            document.getElementById('stopBtn').style.display = "block";
+            
+            money = 3000; totalDistance = 0; lastCoords = null;
+            document.getElementById('cost').innerText = "3,000";
+            socket.emit('taximeter_started', { driverId: driverId });
+
+            watchId = navigator.geolocation.watchPosition((position) => {
+                const { latitude, longitude, accuracy } = position.coords;
+                if (accuracy > 60) return;
+                
+                if (lastCoords) {
+                    const lat1 = lastCoords.lat, lon1 = lastCoords.lon;
+                    const lat2 = latitude, lon2 = longitude;
+                    
+                    const R = 6371;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+                    if (dist > MIN_DISTANCE_THRESHOLD) {
+                        totalDistance += dist;
+                        let currentMoney = 3000 + (totalDistance * pricePerKm);
+                        money = Math.round(currentMoney / 100) * 100;
+                        document.getElementById('cost').innerText = money.toLocaleString();
+                        lastCoords = { lat: latitude, lon: longitude };
+                    }
+                } else { lastCoords = { lat: latitude, lon: longitude }; }
+            }, null, { enableHighAccuracy: true });
+        }
+
+        function stopRide() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                socket.emit('finish_trip_and_pay', { driverId: driverId, amount: money });
+                document.getElementById('final-dist').innerText = totalDistance.toFixed(2);
+                document.getElementById('final-amount').innerText = money.toLocaleString() + " so'm";
+                document.getElementById('finishModal').style.display = "flex";
+                watchId = null;
+            }
+        }
+
+        function closeFinishModal() { 
+            document.getElementById('finishModal').style.display = 'none'; 
+            document.getElementById('activeOrderBox').style.display = 'none';
+            document.getElementById('cost').innerText = "0";
+            document.getElementById('startBtn').style.display = "none";
+            document.getElementById('stopBtn').style.display = "none";
+            document.getElementById('map-container').style.display = 'none';
+            if (directionsRenderer) directionsRenderer.setDirections({routes: []});
+            if (clientMarker) clientMarker.setMap(null);
+        }
+
+        function playAlertSound() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = context.createOscillator();
+                const gain = context.createGain();
+                osc.connect(gain); gain.connect(context.destination);
+                osc.frequency.value = 880; osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 1);
+                osc.stop(context.currentTime + 1);
+            } catch(e) {}
+        }
+
+        function sendQuickMsg() {
+            alert("Mijozga 'Yetib keldim' xabari yuborildi!");
+        }
+
+        function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+    </script>
+</body>
+</html>

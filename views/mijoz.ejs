@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ro'yxatdan o'tish</title>
+    <style>
+        body {
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            font-family: sans-serif;
+        }
+        .form-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 40px;
+            border-radius: 30px;
+            width: 90%;
+            max-width: 380px;
+            border: 1px solid rgba(251, 191, 36, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        h2 { color: #fbbf24; margin-bottom: 25px; text-align: center; }
+        
+        .input-group { margin-bottom: 20px; }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: #fbbf24; background: rgba(0,0,0,0.4); }
+
+        .next-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            background: #fbbf24;
+            color: #0f172a;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .next-btn:hover { background: #f59e0b; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+    <h2>Ma'lumotlaringiz</h2>
+    <form action="/dashboard-mijoz" method="POST">
+        <div class="input-group">
+            <input type="text" name="name" id="name" placeholder="Ismingiz" required>
+        </div>
+        <div class="input-group">
+            <input type="tel" name="phone" id="phone" placeholder="Telefon raqamingiz" required>
+        </div>
+        <button type="submit" class="next-btn">Davom etish</button>
+    </form>
+</div>
+
+    <script>
+        function goToDashboard() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            if(name && phone) {
+                localStorage.setItem('user', JSON.stringify({name, phone}));
+                window.location.href = '/dashboard';
+            } else {
+                alert("Iltimos, ma'lumotlarni to'ldiring!");
+            }
+        }
+    </script>
+</body>
+</html>
