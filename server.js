@@ -95,6 +95,7 @@ mongoose
 // ----------------------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.set("trust proxy", 1);
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
@@ -104,7 +105,8 @@ app.use(
   session({
     secret: "eltaxi_secret_2026",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: { secure: false }
   })
 );
 
@@ -128,8 +130,13 @@ app.get("/mijoz", async (req, res) => {
 
 app.post("/auth-mijoz", async (req, res) => {
   try {
+    console.log("AUTH-MIJOZ body:", req.body);
+
     const { name, phone } = req.body;
-    if (!name || !phone) return res.redirect("/mijoz");
+    if (!name || !phone) {
+      console.log("AUTH-MIJOZ: name yoki phone yo'q");
+      return res.redirect("/mijoz");
+    }
 
     const customer = await Customer.findOneAndUpdate(
       { phone },
@@ -137,27 +144,33 @@ app.post("/auth-mijoz", async (req, res) => {
       { upsert: true, new: true }
     );
 
+    console.log("AUTH-MIJOZ customer:", customer);
+
     req.session.customerId = customer._id;
-    res.redirect("/pwa-install");
+    return res.redirect("/pwa-install");
   } catch (err) {
-    console.log("auth-mijoz xato:", err);
-    res.status(500).send("Mijoz auth xatosi");
+    console.error("AUTH-MIJOZ XATO:", err);
+    return res.status(500).send("Mijoz auth xatosi");
   }
 });
 
 app.post("/driver-auth", async (req, res) => {
   try {
+    console.log("DRIVER-AUTH body:", req.body);
+
     const { login, password } = req.body;
     const driver = await Driver.findOne({ login, password });
+
+    console.log("DRIVER-AUTH driver:", driver);
 
     if (!driver) return res.send("Login yoki parol xato");
     if (driver.isBlocked) return res.send("Profil bloklangan");
 
     req.session.driverId = driver._id;
-    res.redirect("/driver-dashboard");
+    return res.redirect("/driver-dashboard");
   } catch (err) {
-    console.log("driver-auth xato:", err);
-    res.status(500).send("Haydovchi auth xatosi");
+    console.error("DRIVER-AUTH XATO:", err);
+    return res.status(500).send("Haydovchi auth xatosi");
   }
 });
 
