@@ -127,33 +127,38 @@ app.get("/mijoz", async (req, res) => {
 });
 
 app.post("/auth-mijoz", async (req, res) => {
-  const { name, phone } = req.body;
-  if (!name || !phone) return res.redirect("/mijoz");
+  try {
+    const { name, phone } = req.body;
+    if (!name || !phone) return res.redirect("/mijoz");
 
-  const customer = await Customer.findOneAndUpdate(
-    { phone },
-    { name },
-    { upsert: true, returnDocument: "after" }
-  );
+    const customer = await Customer.findOneAndUpdate(
+      { phone },
+      { name },
+      { upsert: true, new: true }
+    );
 
-  req.session.customerId = customer._id;
-  res.redirect("/pwa-install");
+    req.session.customerId = customer._id;
+    res.redirect("/pwa-install");
+  } catch (err) {
+    console.log("auth-mijoz xato:", err);
+    res.status(500).send("Mijoz auth xatosi");
+  }
 });
 
-app.get("/pwa-install", async (req, res) => {
-  if (!req.session.customerId) return res.redirect("/mijoz");
-  res.render("pwa-install");
-});
+app.post("/driver-auth", async (req, res) => {
+  try {
+    const { login, password } = req.body;
+    const driver = await Driver.findOne({ login, password });
 
-app.get("/dashboard", async (req, res) => {
-  if (!req.session.customerId) return res.redirect("/mijoz");
+    if (!driver) return res.send("Login yoki parol xato");
+    if (driver.isBlocked) return res.send("Profil bloklangan");
 
-  const customer = await Customer.findById(req.session.customerId);
-  const settings = await Settings.findOne();
-  const onlineDrivers = await Driver.find({ isOnline: true, isBlocked: false });
-  const availableCars = [...new Set(onlineDrivers.map((d) => d.carModel))];
-
-  res.render("dashboard", { customer, availableCars, settings });
+    req.session.driverId = driver._id;
+    res.redirect("/driver-dashboard");
+  } catch (err) {
+    console.log("driver-auth xato:", err);
+    res.status(500).send("Haydovchi auth xatosi");
+  }
 });
 
 // ----------------------
