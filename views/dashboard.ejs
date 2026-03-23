@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ElTaksi - Dashboard</title>
+    <title>ElTaksi - Mijoz Paneli</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
     <style>
-        :root { --midnight: #0f172a; --gold: #fbbf24; --glass: rgba(255, 255, 255, 0.05); --green: #22c55e; --blue: #3b82f6; }
+        :root { --midnight: #0f172a; --gold: #fbbf24; --glass: rgba(255, 255, 255, 0.05); --green: #22c55e; --blue: #3b82f6; --red: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--midnight); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
         
@@ -22,9 +22,8 @@
         .service-card.active { border-color: var(--gold); }
 
         .car-list-container { display: flex; flex-direction: column; gap: 8px; }
-        .car-option { padding: 14px; background: rgba(255,255,255,0.05); border-radius: 12px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .car-option { padding: 14px; background: rgba(255,255,255,0.05); border-radius: 12px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; border: 1px solid transparent; }
         .car-option:active { background: var(--gold); color: var(--midnight); }
-        .no-driver { font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 10px; }
 
         .delivery-box textarea { width: 100%; height: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; color: white; padding: 10px; font-size: 0.9rem; resize: none; outline: none; }
         .confirm-btn { width: 100%; padding: 12px; margin-top: 10px; background: var(--gold); color: var(--midnight); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
@@ -41,7 +40,9 @@
         .radar { width: 150px; height: 150px; border: 2px solid var(--gold); border-radius: 50%; position: relative; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.5; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.5; } }
 
-        #driver-found-card { display: none; background: #1e293b; border: 2px solid var(--green); border-radius: 25px; padding: 25px; width: 90%; max-width: 350px; text-align: center; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2100; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        #driver-found-card { display: none; background: #1e293b; border: 2px solid var(--green); border-radius: 25px; padding: 20px; width: 90%; max-width: 350px; text-align: center; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2100; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .distance-badge { background: rgba(251, 191, 36, 0.2); color: var(--gold); padding: 5px 15px; border-radius: 10px; font-size: 0.9rem; margin-top: 10px; display: inline-block; }
+        .call-action-btn { background: var(--blue); color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; margin-top: 10px; font-weight: bold; text-decoration: none; display: block; text-align: center; }
 
         .call-btn { margin-top: 10px; width: 100%; max-width: 450px; padding: 18px; border-radius: 20px; border: none; background: var(--gold); color: var(--midnight); font-size: 1.1rem; font-weight: bold; z-index: 10; cursor: pointer; }
     </style>
@@ -71,7 +72,7 @@
                             <div class="car-option" onclick="sendOrder('<%= car %>')">🚕 <%= car %></div>
                         <% }) %>
                     <% } else { %>
-                        <div class="no-driver">Hozirda bo'sh mashinalar yo'q 😕</div>
+                        <div class="no-driver" style="text-align: center; padding: 10px; color: #94a3b8;">Hozirda bo'sh mashinalar yo'q 😕</div>
                     <% } %>
                 </div>
             </div>
@@ -85,13 +86,13 @@
             <div class="card-content">
                 <div class="delivery-box">
                     <textarea id="deliveryText" placeholder="Masalan: 2 ta lavash va pepsi..."></textarea>
-                    <button type="button" class="confirm-btn" onclick="sendOrder('dostavka')">TASDIQLASH</button>
+                    <button type="button" class="confirm-btn" onclick="sendOrder('Dastavka')">TASDIQLASH</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <button type="button" class="call-btn" onclick="sendOrder('umumiy_taksi')">TEZKOR CHAQIRISH</button>
+    <button type="button" class="call-btn" onclick="sendOrder('Standard')">TEZKOR CHAQIRISH</button>
 
     <div class="animation-container">
         <div id="lottie-animation"></div>
@@ -105,8 +106,10 @@
 
     <div id="driver-found-card">
         <div style="font-size: 3rem;">✅</div>
-        <h3 style="color: var(--green);">Haydovchi topildi!</h3>
-        <p id="driver-details" style="margin: 15px 0; font-size: 1.1rem; color: white;"></p>
+        <h3 id="found-status" style="color: var(--green);">Haydovchi topildi!</h3>
+        <p id="driver-details" style="margin: 10px 0; font-size: 1.1rem; color: white;"></p>
+        <div id="distance-info" class="distance-badge">Yaqin atrofdagi haydovchi</div>
+        <a id="call-driver-btn" href="#" class="call-action-btn">📞 QO'NG'IROQ QILISH</a>
         <button type="button" class="confirm-btn" onclick="closeDriverFound()">TUSHUNARLI</button>
     </div>
 
@@ -118,88 +121,216 @@
             <h1 id="receipt-amount" style="font-size: 2.5rem; margin: 10px 0;">0</h1>
             <p>so'm</p>
             <div style="margin-top: 20px; background: #fef3c7; padding: 10px; border-radius: 10px;">
-                <small>🪙 +1 ball qo'shildi!</small>
+                <small style="color: #92400e; font-weight: bold;">🪙 +1 ball qo'shildi!</small>
             </div>
             <button type="button" class="confirm-btn" onclick="location.reload()">YOPISH</button>
         </div>
     </div>
 
+    <div style="text-align: center; padding: 20px; margin-top: 20px; color: rgba(255,255,255,0.4); font-size: 0.75rem;">
+        Anu SharqTech
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+<script>
+const socket = io();
 
-        // Lottie (Yo'l animatsiyasi)
-        lottie.loadAnimation({
-            container: document.getElementById('lottie-animation'),
-            renderer: 'svg', loop: true, autoplay: true,
-            path: 'https://assets9.lottiefiles.com/packages/lf20_96bovdur.json' 
-        });
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
 
-        function toggleCard(id) {
-            const card = document.getElementById(id);
-            const isActive = card.classList.contains('active');
-            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
-            if (!isActive) card.classList.add('active');
+const customerId = '<%= customer._id %>';
+let myPos = { lat: null, lon: null };
+let activeDriverData = null;
+
+// Ovozlar
+const sndArrived = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+const sndNotif = new Audio('https://www.soundjay.com/buttons/beep-08b.mp3');
+
+// Socketga mijoz online ekanini aytamiz
+socket.emit("customer_online", {
+    customerId: customerId
+});
+
+// 1. KARTA OCHISH/YOPISH
+function toggleCard(id) {
+    const card = document.getElementById(id);
+    const isActive = card.classList.contains('active');
+    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('active'));
+    if (!isActive) card.classList.add('active');
+}
+
+// 2. BUYURTMA YUBORISH
+function sendOrder(type) {
+    let note = "";
+
+    if (type === 'Dastavka') {
+        note = document.getElementById('deliveryText').value.trim();
+        if (!note) {
+            alert("Nima kerakligini yozing!");
+            return;
         }
+    } else if (type === 'Standard') {
+        note = "Tezkor taksi chaqirish";
+    } else {
+        note = "Tanlangan mashina: " + type;
+    }
 
-        // Serverdan mashinalar yangilanganda sahifani reload qilish (eng xavfsiz usul)
-        socket.on('update_available_cars', () => {
-            console.log("Mashinalar ro'yxati yangilandi...");
-            // Agar foydalanuvchi buyurtma kutayotgan bo'lsa, reload qilmaymiz
-            if (document.getElementById('waiting-overlay').style.display !== 'flex') {
-                location.reload();
-            }
+    navigator.geolocation.getCurrentPosition((pos) => {
+        myPos = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude
+        };
+
+        const orderData = {
+            customerId: customerId,
+            type: type,
+            note: note,
+            lat: myPos.lat,
+            lon: myPos.lon
+        };
+
+        socket.emit('send_order', orderData);
+
+        document.getElementById('waiting-overlay').style.display = 'flex';
+        document.getElementById('driver-found-card').style.display = 'none';
+
+        showNotification("🔍 Haydovchi qidirilmoqda...", "var(--blue)");
+    }, () => {
+        alert("Iltimos, GPS ruxsatini bering! Usiz taksi chaqirib bo'lmaydi.");
+    }, { enableHighAccuracy: true });
+}
+
+// 3. HAYDOVCHI TOPILMAGANDA
+socket.on('no_driver_available', () => {
+    document.getElementById('waiting-overlay').style.display = 'none';
+    showNotification("🚫 Hozircha bo'sh haydovchi yo'q", "var(--red)");
+});
+
+// 4. 15 SONIYADA HECH KIM QABUL QILMAGANDA
+socket.on('order_not_accepted', () => {
+    document.getElementById('waiting-overlay').style.display = 'none';
+    showNotification("⌛ Buyurtma qabul qilinmadi. Qayta urinib ko'ring.", "var(--red)");
+});
+
+// 5. HAYDOVCHI BUYURTMANI QABUL QILGANDA
+socket.on('order_accepted', (data) => {
+    console.log("order_accepted keldi:", data);
+    activeDriverData = data;
+
+    document.getElementById('waiting-overlay').style.display = 'none';
+
+    try { sndNotif.currentTime = 0; sndNotif.play(); } catch (e) {}
+
+    document.getElementById('found-status').innerText = "Haydovchi yo'lga chiqdi!";
+    document.getElementById('found-status').style.color = "var(--green)";
+    document.getElementById('driver-details').innerHTML = `
+        <b>${data.driverName || "Haydovchi"}</b><br>
+        <span style="color:var(--gold)">${data.carModel || ""} | ${data.carNumber || ""}</span>
+    `;
+    document.getElementById('distance-info').innerText = "Haydovchi siz tomon yo'lga chiqdi";
+    document.getElementById('call-driver-btn').href = `tel:${data.phone || ""}`;
+    document.getElementById('driver-found-card').style.display = 'block';
+
+    showNotification("✅ Haydovchi buyurtmani qabul qildi", "var(--green)");
+});
+
+// 6. HAYDOVCHI KELDIM BOSGANDA
+socket.on('driver_arrived', (data) => {
+    console.log("driver_arrived keldi:", data);
+    activeDriverData = data;
+
+    try { sndArrived.currentTime = 0; sndArrived.play(); } catch (e) {}
+
+    document.getElementById('waiting-overlay').style.display = 'none';
+    document.getElementById('found-status').innerText = "Haydovchi keldi!";
+    document.getElementById('found-status').style.color = "var(--gold)";
+    document.getElementById('driver-details').innerHTML = `
+        <b>${data.driverName || "Haydovchi"}</b><br>
+        <span style="color:var(--gold)">${data.carModel || ""} | ${data.carNumber || ""}</span>
+    `;
+    document.getElementById('distance-info').innerText = "🚕 Mashina tashqarida kutmoqda";
+    document.getElementById('call-driver-btn').href = `tel:${data.phone || ""}`;
+    document.getElementById('driver-found-card').style.display = 'block';
+
+    showNotification("🚕 Haydovchi yetib keldi!", "var(--gold)");
+
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("ElTaksi", {
+            body: "Haydovchi yetib keldi!",
+            icon: "/icon.png"
         });
+    }
+});
 
-        function sendOrder(type) {
-            let detail = (type === 'dostavka') ? document.getElementById('deliveryText').value : type;
-            if(type === 'dostavka' && !detail) return alert("Nima kerakligini yozing!");
+// 7. TAKSOMETR YOQILGANDA
+socket.on('ride_started', () => {
+console.log("ride_started keldi:", data);
+    try { sndNotif.currentTime = 0; sndNotif.play(); } catch (e) {}
 
-            if (!navigator.geolocation) return alert("Brauzeringiz GPS-ni qo'llab-quvvatlamaydi!");
+    document.getElementById('driver-found-card').style.display = 'none';
+    document.getElementById('waiting-overlay').style.display = 'none';
 
-            navigator.geolocation.getCurrentPosition((pos) => {
-                socket.emit('new_order', {
-                    clientName: "<%= customer.name %>",
-                    type: type,
-                    detail: detail,
-                    lat: pos.coords.latitude,
-                    lon: pos.coords.longitude
-                });
-                document.getElementById('waiting-overlay').style.display = 'flex';
-            }, (err) => {
-                alert("GPS-ni yoqing! Xato: " + err.message);
-            }, { enableHighAccuracy: true });
-        }
+    showNotification("🚀 Safar boshlandi", "var(--green)");
+});
 
-        function cancelOrder() { document.getElementById('waiting-overlay').style.display = 'none'; }
+// 8. SAFAR TUGAGANDA
+socket.on('trip_finished', (data) => {
+console.log("trip_finished keldi:", data);
+    try { sndNotif.currentTime = 0; sndNotif.play(); } catch (e) {}
 
-        socket.on('order_accepted', (data) => {
-            document.getElementById('waiting-overlay').style.display = 'none';
-            showNotification(`🚖 ${data.driverName} buyurtmani oldi!`, 'var(--blue)');
-            document.getElementById('driver-details').innerHTML = `<b>${data.driverName}</b><br>${data.carModel} | ${data.carNumber}`;
-            document.getElementById('driver-found-card').style.display = 'block';
-            socket.emit('join_trip_room', { roomName: data.roomName });
-        });
+    document.getElementById('waiting-overlay').style.display = 'none';
+    document.getElementById('driver-found-card').style.display = 'none';
 
-        socket.on('notify_taximeter_on', (data) => {
-            showNotification(data.message, 'var(--green)');
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        });
+    document.getElementById('receipt-amount').innerText = Number(data.amount || 0).toLocaleString();
+    document.getElementById('receipt-modal').style.display = 'flex';
 
-        socket.on('display_receipt', (data) => {
-            document.getElementById('receipt-amount').innerText = data.total.toLocaleString();
-            document.getElementById('receipt-modal').style.display = 'flex';
-        });
+    activeDriverData = null;
 
-        function showNotification(text, color) {
-            const notif = document.getElementById('notification');
-            notif.style.background = color;
-            document.getElementById('notif-text').innerText = text;
-            notif.style.top = '20px';
-            setTimeout(() => notif.style.top = '-100px', 6000);
-        }
+    showNotification("✅ Safar yakunlandi", "var(--green)");
+});
 
-        function closeDriverFound() { document.getElementById('driver-found-card').style.display = 'none'; }
-    </script>
+// 9. BUYURTMA MIJOZ TOMONIDAN BEKOR QILINSA
+socket.on('order_cancelled_client', () => {
+    document.getElementById('waiting-overlay').style.display = 'none';
+    document.getElementById('driver-found-card').style.display = 'none';
+    showNotification("❌ Buyurtma bekor qilindi", "var(--red)");
+});
+
+// 10. HAYDOVCHI JOYLASHUVI YANGILANISHI
+socket.on('driver_location_updated', (data) => {
+    // keyin xaritada ishlatish mumkin
+    console.log("Haydovchi joylashuvi:", data.lat, data.lon);
+});
+
+// 11. BUYURTMANI BEKOR QILISH
+function cancelOrder() {
+    socket.emit("cancel_order", {
+        customerId: customerId
+    });
+
+    document.getElementById('waiting-overlay').style.display = 'none';
+    document.getElementById('driver-found-card').style.display = 'none';
+
+    showNotification("❌ Buyurtma bekor qilindi", "var(--red)");
+}
+
+// 12. HAYDOVCHI KARTASINI YOPISH
+function closeDriverFound() {
+    document.getElementById('driver-found-card').style.display = 'none';
+}
+
+// 13. TEPADAGI XABAR
+function showNotification(text, color) {
+    const notif = document.getElementById('notification');
+    notif.style.background = color;
+    document.getElementById('notif-text').innerText = text;
+    notif.style.top = '20px';
+
+    setTimeout(() => {
+        notif.style.top = '-100px';
+    }, 5000);
+}
+</script>
 </body>
 </html>

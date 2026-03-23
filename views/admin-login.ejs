@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElTaksi | Secure Vault</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            height: 100%;
+            background: #050505;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Zarralar foni uchun canvas */
+        #particle-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Portal Animatsiyasi */
+        .portal-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            pointer-events: none;
+            transition: width 0.8s ease-in, height 0.8s ease-in;
+        }
+
+        .portal-active {
+            width: 300vw;
+            height: 300vw;
+        }
+
+        /* Login Card - Minimalist & Geometric */
+        .vault-card {
+            width: 380px;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .vault-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.01);
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #fff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .input-container {
+            margin: 30px 0;
+        }
+
+        .minimal-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 5px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .minimal-input:focus {
+            border-bottom-color: #fff;
+            letter-spacing: 2px;
+        }
+
+        /* Creative Button */
+        .enter-btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 800;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enter-btn:hover {
+            background: #e0e0e0;
+            letter-spacing: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="portal-overlay" id="portal"></div>
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="main-wrapper">
+        <div class="vault-card" id="loginCard">
+            <div class="lock-icon">
+                <i class="fas fa-fingerprint"></i>
+            </div>
+            <h2 style="font-weight: 200; margin-bottom: 10px;">AUTH</h2>
+            
+            <form id="loginForm" action="/admin-auth" method="POST">
+                <div class="input-container">
+                    <input type="text" name="user" class="minimal-input" placeholder="USERNAME" required autocomplete="off">
+                    <input type="password" name="pass" class="minimal-input" placeholder="PASSCODE" required>
+                </div>
+                
+                <button type="submit" class="enter-btn">ENTER</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Zarralar sozlamasi
+        particlesJS("particle-canvas", {
+            "particles": {
+                "number": { "value": 80 },
+                "color": { "value": "#ffffff" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.5 },
+                "size": { "value": 2 },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.2, "width": 1 },
+                "move": { "enable": true, "speed": 2 }
+            },
+            "interactivity": {
+                "events": { "onhover": { "enable": true, "mode": "grab" } }
+            }
+        });
+
+        // Portal effekti mantiqi
+       const form = document.getElementById('loginForm');
+const portal = document.getElementById('portal');
+const card = document.getElementById('loginCard');
+
+form.addEventListener('submit', function(e) {
+    // 1. Standart yuborishni to'xtatamiz (animatsiya ko'rinishi uchun)
+    e.preventDefault(); 
+    
+    // 2. Animatsiyalarni ishga tushiramiz
+    card.style.transform = "scale(0.8)";
+    card.style.opacity = "0";
+
+    setTimeout(() => {
+        portal.classList.add('portal-active');
+    }, 200);
+
+    // 3. ENG MUHIM JOYI: 
+    // form.submit() o'rniga quyidagi usulni ishlating. 
+    // Bu metod "event listener"ni chetlab o'tib, formani to'g'ridan-to'g'ri action'ga yuboradi.
+    setTimeout(() => {
+        form.submit(); 
+    }, 1000);
+});
+    </script>
+</body>
+</html>
