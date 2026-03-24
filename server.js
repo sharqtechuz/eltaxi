@@ -80,7 +80,6 @@ async function generateDriverCustomId() {
 // DATABASE
 // ----------------------
 mongoose
-  mongoose
   .connect("mongodb+srv://arlistunner_db_user:ipp4K0HP1SuMz6N6@eltaxi.rfxddqh.mongodb.net/eltaxi_db?retryWrites=true&w=majority&appName=ELtaxi")
   .then(async () => {
     console.log("MongoDB ulandi ✅");
@@ -154,23 +153,21 @@ app.post("/auth-mijoz", async (req, res) => {
   }
 });
 
-app.post("/driver-auth", async (req, res) => {
+app.get("/pwa-install", async (req, res) => {
   try {
-    console.log("DRIVER-AUTH body:", req.body);
+    if (!req.session.customerId) {
+      return res.redirect("/mijoz");
+    }
 
-    const { login, password } = req.body;
-    const driver = await Driver.findOne({ login, password });
+    const customer = await Customer.findById(req.session.customerId);
+    if (!customer) {
+      return res.redirect("/mijoz");
+    }
 
-    console.log("DRIVER-AUTH driver:", driver);
-
-    if (!driver) return res.send("Login yoki parol xato");
-    if (driver.isBlocked) return res.send("Profil bloklangan");
-
-    req.session.driverId = driver._id;
-    return res.redirect("/driver-dashboard");
+    res.render("pwa-install", { customer });
   } catch (err) {
-    console.error("DRIVER-AUTH XATO:", err);
-    return res.status(500).send("Haydovchi auth xatosi");
+    console.log("PWA install xato:", err);
+    res.status(500).send("PWA install sahifa xatosi");
   }
 });
 
