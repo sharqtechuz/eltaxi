@@ -11,7 +11,16 @@
     <style>
         :root { --midnight: #0f172a; --gold: #fbbf24; --glass: rgba(255, 255, 255, 0.05); --green: #22c55e; --blue: #3b82f6; --red: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--midnight); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
+       body {
+    background: var(--midnight);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    padding: 15px;
+    overflow: hidden;
+}
         
         .header { width: 100%; max-width: 450px; display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.9rem; align-items: center; }
         .user-info span { color: var(--gold); font-weight: bold; }
@@ -31,8 +40,19 @@
         .delivery-box textarea { width: 100%; height: 80px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; color: white; padding: 10px; font-size: 0.9rem; resize: none; outline: none; }
         .confirm-btn { width: 100%; padding: 12px; margin-top: 10px; background: var(--gold); color: var(--midnight); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        .animation-container { width: 100%; max-width: 450px; flex: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; position: relative; }
-        #lottie-animation { width: 250px; height: 250px; opacity: 0.4; }
+       .animation-container {
+    width: 100%;
+    max-width: 450px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+        #lottie-animation { width: 220px; height: 220px; opacity: 0.4; }
 
         #notification { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--blue); color: white; padding: 15px; border-radius: 15px; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: top 0.5s ease; z-index: 3000; }
 
