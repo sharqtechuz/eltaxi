@@ -171,6 +171,37 @@ app.get("/pwa-install", async (req, res) => {
   }
 });
 
+app.get("/dashboard", async (req, res) => {
+  try {
+    if (!req.session.customerId) {
+      return res.redirect("/mijoz");
+    }
+
+    const customer = await Customer.findById(req.session.customerId);
+    const settings = await Settings.findOne();
+
+    if (!customer) {
+      return res.redirect("/mijoz");
+    }
+
+    const onlineDrivers = await Driver.find({
+      isOnline: true,
+      isBlocked: false
+    });
+
+    const availableCars = [...new Set(onlineDrivers.map(d => d.carModel))];
+
+    res.render("dashboard", {
+      customer,
+      settings: settings || { pricePerKm: 2000, baseFare: 5000 },
+      availableCars
+    });
+  } catch (err) {
+    console.log("Mijoz dashboard xatosi:", err);
+    res.status(500).send("Dashboard xatosi");
+  }
+});
+
 // ----------------------
 // DRIVER LOGIN (XAYDOVCHI KIRISHI)
 // ----------------------
