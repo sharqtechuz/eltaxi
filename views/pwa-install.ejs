@@ -1,61 +1,85 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ElTaksi - O'rnatish</title>
-<link rel="manifest" href="/manifest.json">
-<style>
-body {
-  font-family: 'Poppins', sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  background:#070b14;
-  color:white;
-  flex-direction:column;
-  text-align:center;
-}
-button {
-  padding:15px 30px;
-  font-size:1rem;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg,#fbbf24,#f59e0b);
-  color:#0f172a;
-  font-weight:800;
-  cursor:pointer;
-  margin-top:20px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElTaksi - O'rnatish</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #070b14;
+      color: white;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg,#fbbf24,#f59e0b);
+      color: #0f172a;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #continueBtn {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<h1>ElTaksi ilovasini o'rnatish</h1>
-<p>“Install” tugmasini bosib ilovani telefoningizga o‘rnating</p>
+  <h1>ElTaksi ilovasini o'rnatish</h1>
+  <p>“Install” tugmasini bosib ilovani telefoningizga o‘rnating</p>
 
-<button id="installBtn">Install</button>
+  <button id="installBtn">Install</button>
+  <button id="continueBtn" onclick="goDashboard()">Davom etish</button>
 
-<script>
-let deferredPrompt;
+  <script>
+    let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredPrompt = e;
-});
+    function goDashboard() {
+      window.location.href = "/dashboard";
+    }
 
-document.getElementById('installBtn').addEventListener('click', async ()=>{
-  if(deferredPrompt){
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    console.log(choice.outcome);
-    deferredPrompt = null;
-  } else {
-    alert("Ilova o'rnatish imkoniyati hozircha mavjud emas");
-  }
-});
-</script>
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log("PWA o‘rnatildi");
+      goDashboard();
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        console.log(choice.outcome);
+
+        deferredPrompt = null;
+
+        if (choice.outcome === 'accepted') {
+          setTimeout(() => {
+            goDashboard();
+          }, 1000);
+        }
+      } else {
+        alert("Ilova o'rnatish imkoniyati hozircha mavjud emas. Davom etish tugmasini bosing.");
+        document.getElementById('continueBtn').style.display = 'inline-block';
+      }
+    });
+  </script>
 
 </body>
 </html>
