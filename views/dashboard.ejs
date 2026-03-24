@@ -11,7 +11,23 @@
     <style>
         :root { --midnight: #0f172a; --gold: #fbbf24; --glass: rgba(255, 255, 255, 0.05); --green: #22c55e; --blue: #3b82f6; --red: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-       body {
+<div style="
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.72rem;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+    z-index: 10;
+    pointer-events: none;
+">
+    © 2026 SharqTech. Barcha huquqlar himoyalangan.
+</div>      
+
+body {
     background: var(--midnight);
     color: white;
     display: flex;
@@ -20,6 +36,7 @@
     height: 100vh;
     padding: 15px;
     overflow: hidden;
+    position: relative;
 }
         
         .header { width: 100%; max-width: 450px; display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.9rem; align-items: center; }
