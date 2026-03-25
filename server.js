@@ -47,8 +47,8 @@ const customerSchema = new mongoose.Schema({
 });
 
 const settingsSchema = new mongoose.Schema({
-  baseFare: { type: Number, default: 5000 },
-  pricePerKm: { type: Number, default: 2000 },
+  baseFare: { type: Number, default: 2500 },
+  pricePerKm: { type: Number, default: 1000 },
   minDist: { type: Number, default: 2 },
   waitPrice: { type: Number, default: 500 },
 });
