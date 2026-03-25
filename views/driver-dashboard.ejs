@@ -302,7 +302,7 @@
         <div class="taximeter-section">
             <div class="taximeter-box">
                 <div class="price" id="cost">0</div>
-                <span class="currency" id="price-label">SUM (<%= settings.pricePerKm.toLocaleString() %>) so'm/km</span>
+                <span class="currency" id="price-label">SO'M</span>
                 <div class="btn-group">
                  <button class="btn btn-start" id="startBtn" onclick="startRide()" style="display:none;">MIJOZ O'TIRDI</button>
                 <button class="btn btn-stop" id="stopBtn" onclick="stopRide()" style="display:none;">SAFARNI TUGATISH</button>
@@ -384,8 +384,7 @@
 
     // Narxlar (Serverdan kelgan)
     const pricePerKm = Number('<%= settings.pricePerKm %>') || 1000;
-const baseFare = Number('<%= settings.baseFare %>') || 3000;
-
+    const baseFare = 2500;
     // 1. ONLINE/OFFLINE REJIM
     document.getElementById('online-switch').addEventListener('change', function() {
     const statusLabel = document.getElementById('queue-status');
