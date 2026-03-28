@@ -15,17 +15,29 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   bool _isLoading = false;
 
   void _login() {
-    if (_userController.text == 'sharqtech' &&
-        _passController.text == 'sharq1505') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+    if (_userController.text.isEmpty || _passController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login va parolni kiriting')),
       );
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login yoki parol xato')));
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (_userController.text == 'sharqtech' &&
+          _passController.text == 'sharq1505') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login yoki parol xato')));
+      }
+      if (mounted) setState(() => _isLoading = false);
+    });
   }
 
   @override
@@ -92,7 +104,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _login,
+                    onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFfbbf24),
                       foregroundColor: const Color(0xFF0f172a),
@@ -101,10 +113,19 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         borderRadius: BorderRadius.circular(18),
                       ),
                     ),
-                    child: const Text(
-                      'KIRISH',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF0f172a),
+                            ),
+                          )
+                        : const Text(
+                            'KIRISH',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ),
               ],
