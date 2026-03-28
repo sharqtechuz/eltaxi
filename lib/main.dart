@@ -7,6 +7,9 @@ import 'driver_login.dart';
 import 'driver_dashboard.dart';
 import 'admin_login.dart';
 
+const String appVersion = '1.0.0';
+const String serverUrl = 'https://eltaxi-production.up.railway.app';
+
 void main() {
   runApp(const ElTaksiApp());
 }
@@ -32,8 +35,63 @@ class ElTaksiApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkUpdate();
+  }
+
+  Future<void> _checkUpdate() async {
+    try {
+      final response = await http
+          .get(Uri.parse('$serverUrl/api/version'))
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final latestVersion = data['version'] ?? appVersion;
+
+        if (latestVersion != appVersion && mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF1e293b),
+              title: const Text(
+                'Yangilanish mavjud!',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: const Text(
+                'Ilovaning yangi versiyasi chiqdi. Iltimos, yangilang.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text(
+                    'Keyinroq',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Server not available, skip update check
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
