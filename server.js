@@ -9,6 +9,14 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // ----------------------
 // MODELLAR
 // ----------------------
@@ -266,6 +274,59 @@ app.get("/admin", async (req, res) => {
     count: drivers.reduce((a, d) => a + (d.statistics.totalTrips || 0), 0),
   };
   res.render("admin", { drivers, customerCount, onlineCount, totalStats });
+});
+
+// ----------------------
+// ADMIN API (Mobile uchun)
+// ----------------------
+app.post("/api/admin/login", (req, res) => {
+  const { user, pass } = req.body;
+  if (user === "sharqtech" && pass === "sharq1505") {
+    return res.json({ success: true, token: "admin-token-123" });
+  }
+  res.status(401).json({ success: false, message: "Login yoki parol xato" });
+});
+
+app.get("/api/admin/drivers", async (req, res) => {
+  try {
+    const drivers = await Driver.find().select("-password");
+    res.json(drivers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/admin/add-driver", async (req, res) => {
+  const { driverName, carModel, carNumber, phone, login, password, region, tariff } = req.body;
+
+  try {
+    const newCustomId = await generateDriverCustomId();
+
+    await Driver.create({
+      driverIdCustom: newCustomId,
+      login,
+      password,
+      driverName,
+      carModel,
+      carNumber,
+      phone,
+      region,
+      tariff
+    });
+
+    res.json({ success: true, message: "Haydovchi muvaffaqiyatli qo'shildi" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: "Xatolik: " + error.message });
+  }
+});
+
+app.delete("/api/admin/drivers/:id", async (req, res) => {
+  try {
+    await Driver.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ----------------------
@@ -787,3 +848,30 @@ io.on("connection", (socket) => {
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("ElTaxi ishlayapti 🚕"));
+app.get("/api/customer-data", async (req, res) => {
+  try {
+    const phone = req.query.phone;
+    if (!phone) return res.status(401).json({ error: "Not authorized" });
+    const customer = await Customer.findOne({ phone });
+    if (!customer) return res.status(404).json({ error: "Customer not found" });
+    const onlineDrivers = await Driver.find({ isOnline: true, isBlocked: false });
+    const availableCars = [...new Set(onlineDrivers.map(d => d.carModel))];
+    res.json({ name: customer.name, phone: customer.phone, balls: customer.balls, availableCars: availableCars });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post("/api/driver-data", async (req, res) => {
+  try {
+    const { login, password } = req.body;
+    const driver = await Driver.findOne({ login, password });
+    if (!driver) return res.status(404).json({ error: "Driver not found" });
+    res.json({ _id: driver._id, driverName: driver.driverName, carModel: driver.carModel, carNumber: driver.carNumber, phone: driver.phone, subscriptionUntil: driver.subscriptionUntil, statistics: driver.statistics });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get("/api/settings", async (req, res) => {
+  try {
+    const settings = await Settings.findOne();
+    res.json({ baseFare: settings?.baseFare || 2500, pricePerKm: settings?.pricePerKm || 1000, minDist: settings?.minDist || 2, waitPrice: settings?.waitPrice || 500 });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
