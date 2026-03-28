@@ -269,7 +269,6 @@ app.get("/admin", async (req, res) => {
 });
 
 // ----------------------
-<<<<<<< HEAD
 // ADMIN API (Mobile uchun)
 // ----------------------
 app.post("/api/admin/login", (req, res) => {
@@ -841,9 +840,6 @@ io.on("connection", (socket) => {
 });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("ElTaxi ishlayapti 🚕"));
-<<<<<<< HEAD
-
-// API Routes for Mobile App
 app.get("/api/customer-data", async (req, res) => {
   try {
     const phone = req.query.phone;
