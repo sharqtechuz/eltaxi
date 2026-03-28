@@ -12,9 +12,68 @@ class _DriverDashboardState extends State<DriverDashboard> {
   bool _isOnline = false;
   String _orderStatus = 'waiting';
   int _currentPrice = 25000;
+  static const String _taximeterPin = '1505';
 
   void _toggleOnline() {
     setState(() => _isOnline = !_isOnline);
+  }
+
+  void _showPinDialog({required VoidCallback onSuccess}) {
+    final pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1e293b),
+        title: const Text(
+          'Taksometr PIN',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: TextField(
+          controller: pinController,
+          keyboardType: TextInputType.number,
+          obscureText: true,
+          maxLength: 4,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'PIN kiriting',
+            hintStyle: const TextStyle(color: Color(0xFF64748b)),
+            counterText: '',
+            filled: true,
+            fillColor: Colors.black.withValues(alpha: 0.35),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Bekor', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (pinController.text == _taximeterPin) {
+                Navigator.pop(ctx);
+                onSuccess();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Noto\'g\'ri PIN!'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFfbbf24),
+              foregroundColor: const Color(0xFF0f172a),
+            ),
+            child: const Text('Tasdiq'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _acceptOrder() {
@@ -26,7 +85,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
   }
 
   void _startRide() {
-    setState(() => _orderStatus = 'in_progress');
+    _showPinDialog(
+      onSuccess: () {
+        setState(() => _orderStatus = 'in_progress');
+      },
+    );
   }
 
   void _stopRide() {
