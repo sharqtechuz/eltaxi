@@ -287,6 +287,10 @@ app.post("/api/admin/login", (req, res) => {
   res.status(401).json({ success: false, message: "Login yoki parol xato" });
 });
 
+app.get("/api/version", (req, res) => {
+  res.json({ version: "1.0.0", minVersion: "1.0.0" });
+});
+
 app.get("/api/admin/drivers", async (req, res) => {
   try {
     const drivers = await Driver.find().select("-password");
