@@ -891,6 +891,16 @@ app.post("/api/driver-data", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.post("/api/driver-login", async (req, res) => {
+  try {
+    const { login, password } = req.body;
+    const driver = await Driver.findOne({ login, password });
+    if (!driver) return res.status(401).json({ success: false, error: "Login yoki parol xato" });
+    if (driver.isBlocked) return res.status(403).json({ success: false, error: "Profil bloklangan" });
+    res.json({ success: true, login: driver.login });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
 app.get("/api/settings", async (req, res) => {
   try {
     const settings = await Settings.findOne();
