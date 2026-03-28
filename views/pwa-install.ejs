@@ -2,22 +2,12 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ElTaksi - O'rnatish</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ElTaksi">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
   <link rel="manifest" href="/manifest.json">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -27,111 +17,38 @@
       flex-direction: column;
       text-align: center;
       padding: 20px;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-
-    .app-icon {
-      width: 120px;
-      height: 120px;
-      margin-bottom: 20px;
-      border-radius: 24px;
-      background: linear-gradient(135deg,#fbbf24,#f59e0b);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      font-weight: bold;
-      color: #0f172a;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-      color: #fbbf24;
-    }
-
-    p {
-      color: #94a3b8;
-      margin-bottom: 30px;
-      font-size: 0.95rem;
-      line-height: 1.5;
     }
 
     button {
-      padding: 16px 40px;
-      font-size: 1.1rem;
+      padding: 15px 30px;
+      font-size: 1rem;
       border: none;
-      border-radius: 14px;
+      border-radius: 10px;
       background: linear-gradient(135deg,#fbbf24,#f59e0b);
       color: #0f172a;
       font-weight: 800;
       cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
-      max-width: 300px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    button:active {
-      transform: scale(0.96);
+      margin-top: 20px;
     }
 
     #continueBtn {
       display: none;
-      background: transparent;
-      border: 2px solid #fbbf24;
-      color: #fbbf24;
-    }
-
-    .ios-note {
-      display: none;
-      margin-top: 20px;
-      padding: 15px;
-      background: #1e293b;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      color: #cbd5e1;
-      max-width: 300px;
-    }
-
-    .ios-note strong {
-      color: #fbbf24;
-    }
-
-    .step {
-      margin: 8px 0;
     }
   </style>
 </head>
 <body>
 
-  <div class="app-icon">🚕</div>
-  <h1>ElTaksi</h1>
-  <p>Ilovani telefoningizga o'rnating va doimiy foydalaning</p>
+  <h1>ElTaksi ilovasini o'rnatish</h1>
+  <p>“Install” tugmasini bosib ilovani telefoningizga o‘rnating</p>
 
-  <button id="installBtn">O'rnatish</button>
-  <button id="continueBtn" onclick="goDashboard()">Keyinchalik</button>
-
-  <div id="iosNote" class="ios-note">
-    <strong>iOS qurilmalar uchun:</strong><br><br>
-    <div class="step">1. ⚙️ Sozlamalar oching</div>
-    <div class="step">2. 📱 Safari yoki Chrome ga kiring</div>
-    <div class="step">3. 📤 "Ekanga qo'shish" tugmasini bosing</div>
-  </div>
+  <button id="installBtn">Install</button>
+  <button id="continueBtn" onclick="goDashboard()">Davom etish</button>
 
   <script>
     let deferredPrompt;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
     function goDashboard() {
       window.location.href = "/dashboard";
-    }
-
-    if (isIOS) {
-      document.getElementById('iosNote').style.display = 'block';
-      document.getElementById('installBtn').style.display = 'none';
-      document.getElementById('continueBtn').style.display = 'block';
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -140,7 +57,7 @@
     });
 
     window.addEventListener('appinstalled', () => {
-      console.log("PWA o'rnatildi");
+      console.log("PWA o‘rnatildi");
       goDashboard();
     });
 
@@ -148,6 +65,7 @@
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const choice = await deferredPrompt.userChoice;
+        console.log(choice.outcome);
 
         deferredPrompt = null;
 
@@ -157,7 +75,8 @@
           }, 1000);
         }
       } else {
-        document.getElementById('continueBtn').style.display = 'block';
+        alert("Ilova o'rnatish imkoniyati hozircha mavjud emas. Davom etish tugmasini bosing.");
+        document.getElementById('continueBtn').style.display = 'inline-block';
       }
     });
   </script>
