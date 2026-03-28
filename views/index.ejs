@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElTaksi - Premium</title>
+    <style>
+        :root {
+            --midnight: #0f172a;
+            --gold: #fbbf24;
+            --gold-hover: #f59e0b;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background-color: var(--midnight);
+            background-image: radial-gradient(circle at top right, #1e293b, var(--midnight));
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: var(--glass);
+            padding: 50px 30px;
+            border-radius: 30px; /* Yumshoq burchaklar */
+            border: 1px solid rgba(251, 191, 36, 0.2); /* Oltin rangli nozik chegara */
+            backdrop-filter: blur(15px);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 { 
+            font-size: 3rem; 
+            margin-bottom: 10px; 
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        p { margin-bottom: 40px; opacity: 0.7; letter-spacing: 1px; }
+
+        .selection-box { display: flex; flex-direction: column; gap: 20px; }
+
+        .btn {
+            padding: 18px;
+            border-radius: 20px; /* Yumshoq tugmalar */
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: none;
+        }
+
+        .client-btn {
+            background: var(--gold);
+            color: var(--midnight);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.2);
+        }
+
+        .client-btn:hover {
+            background: var(--gold-hover);
+            transform: scale(1.03);
+            box-shadow: 0 15px 25px rgba(251, 191, 36, 0.3);
+        }
+
+        .driver-btn {
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+        }
+
+        .driver-btn:hover {
+            background: rgba(251, 191, 36, 0.1);
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚕 ElTaksi</h1>
+        <p>Premium Taksi Xizmati</p>
+        
+        <div class="selection-box">
+            <button class="btn client-btn" onclick="location.href='/mijoz'">Mijoz Sifatida Kirish</button>
+            <button class="btn driver-btn" onclick="location.href='/login'">Haydovchi Paneli</button>
+        </div>
+    </div>
+</body>
+</html>

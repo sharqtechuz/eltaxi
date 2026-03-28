@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAm2vpnqB_zGp1hQ6xZmpOJjo5zxJsMaE&libraries=geometry"></script>
+    
+    <title>ElTaksi - Haydovchi Ishchi Oynasi</title>
+    <style>
+        :root { --midnight: #0f172a; --gold: #fbbf24; --green: #22c55e; --red: #ef4444; --slate: #1e293b; --white: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #070b14; display: flex; justify-content: center; min-height: 100vh; color: white; overflow-x: hidden; }
+
+        .mobile-container {
+            width: 100%; max-width: 450px; background: var(--midnight);
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); min-height: 100vh;
+        }
+
+        /* Xarita va Navigatsiya UI */
+        #map-container { 
+            display: none; height: 320px; width: 100%; border-bottom: 2px solid var(--gold); 
+            z-index: 10; background: #111; position: relative;
+        }
+        #map { height: 100%; width: 100%; }
+
+        /* Header qismi */
+        .header {
+            padding: 15px 20px; background: rgba(255,255,255,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+        }
+        .driver-info h4 { color: var(--gold); font-size: 1rem; }
+        .driver-info p { font-size: 0.8rem; color: #94a3b8; }
+        .sub-date { font-size: 0.7rem; color: var(--gold); display: block; margin-top: 2px; opacity: 0.8; }
+
+        .switch { position: relative; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #334155; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--green); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Taksometr qismi */
+        .taximeter-section { padding: 20px; text-align: center; }
+        .taximeter-box {
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.08), rgba(15, 23, 42, 0.2));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 25px; padding: 25px; position: relative;
+            overflow: hidden;
+        }
+        .price { font-size: 3.5rem; font-weight: 800; color: var(--gold); line-height: 1; text-shadow: 0 0 15px rgba(251, 191, 36, 0.3); margin-bottom: 5px; }
+        .currency { color: #94a3b8; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 15px; display: block; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.9rem; }
+        .btn-start { background: var(--green); color: white; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+        .btn-stop { background: var(--red); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+
+        /* Aktiv buyurtma paneli */
+        .active-order-info {
+            display: none; background: #1e293b; margin: 15px 20px; padding: 18px; border-radius: 18px;
+            border: 1px solid var(--gold); animation: slideIn 0.3s ease;
+        }
+        .contact-btns { display: flex; gap: 8px; margin-top: 15px; }
+        .call-btn { flex: 1; background: #3b82f6; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.8rem; }
+        .nav-btn { flex: 1; background: var(--gold); color: #000; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.8rem; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .chat-btn { flex: 1; background: var(--slate); color: white; border: 1px solid #475569; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+
+        /* Qidiruv va Buyurtmalar ro'yxati */
+        .orders-container { flex: 1; padding: 0 20px 20px 20px; display: none; overflow-y: auto; }
+        .search-box { margin-bottom: 15px; position: relative; }
+        .search-box input { width: 100%; padding: 12px 40px 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; outline: none; }
+        .section-title { font-size: 0.75rem; color: #64748b; margin: 15px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        
+        .order-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: linear-gradient(145deg, rgba(30,41,59,0.95), rgba(15,23,42,0.98));
+    border: 1px solid rgba(251, 191, 36, 0.16);
+    border-radius: 18px;
+    padding: 16px 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    animation: slideIn 0.35s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.28);
+    border-color: rgba(251, 191, 36, 0.28);
+}
+
+.order-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.45);
+}
+
+.order-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.order-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    border: 1px solid rgba(251, 191, 36, 0.22);
+    flex-shrink: 0;
+}
+
+.order-client-name {
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.order-subtext {
+    color: #94a3b8;
+    font-size: 0.76rem;
+    margin-top: 2px;
+}
+
+.order-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.order-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #e2e8f0;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.order-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 92px;
+}
+
+.order-timer {
+    font-size: 0.8rem;
+    color: var(--gold);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.order-note {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+    max-width: 95%;
+}
+
+.order-progress-wrap {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.order-progress-bar {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #fbbf24, #ef4444);
+    transform-origin: left center;
+    transform: scaleX(1);
+}
+
+.order-card.expiring {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 10px 28px rgba(239, 68, 68, 0.12);
+}
+
+.order-card.removing {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: 0.25s ease;
+}
+
+.view-order-btn {
+    background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.1));
+    color: var(--gold);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    cursor: pointer;
+    min-width: 92px;
+    text-transform: none;
+    transition: 0.25s ease;
+}
+
+.view-order-btn:hover {
+    background: linear-gradient(135deg, rgba(251,191,36,0.28), rgba(251,191,36,0.16));
+    transform: scale(1.03);
+}
+
+        /* Modallar va boshqalar - (Dizaynga tegmadim) */
+        #orderModal, #finishModal, #adminMsgModal, #reportModal {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(8px);
+        }
+        .modal-content { background:#1e293b; width:88%; padding:30px; border-radius:24px; text-align:center; border:1px solid var(--gold); position: relative; }
+        .receipt-card { background: white; width: 88%; padding:30px; border-radius:24px; text-align:center; color: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        /* Haftalik Report */
+        #reportModal { flex-direction: column; padding: 25px; background: var(--midnight); z-index: 10001; }
+        .chart-box {
+            width: 100%; background: rgba(255,255,255,0.03); border-radius: 20px; padding: 20px;
+            height: 220px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px;
+            margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .bar { width: 100%; background: linear-gradient(to top, var(--gold), #fcd34d); border-radius: 6px 6px 2px 2px; min-height: 5px; }
+
+        .stats-footer { 
+            display: flex; justify-content: space-around; padding: 18px; 
+            background: rgba(255,255,255,0.04); border-top: 1px solid rgba(251, 191, 36, 0.15);
+            cursor: pointer; margin-top: auto;
+        }
+        .timer-bar { position: absolute; bottom: 0; left: 0; height: 6px; background: var(--gold); width: 100%; border-radius: 0 0 24px 24px; transition: width 15s linear; }
+        #custom-toast { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; padding: 12px 28px; border-radius: 12px; font-weight: bold; z-index: 10002; display: none; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="custom-toast">Xabar yuborildi!</div>
+
+    <div class="mobile-container">
+        <div id="map-container"><div id="map"></div></div>
+
+        <div class="header">
+            <div class="driver-info">
+                <h4><%= driver.driverName %></h4>
+                <p><%= driver.carModel %> | <%= driver.carNumber %></p>
+                <span class="sub-date">📅 Obuna: <%= new Date(driver.subscriptionUntil).toLocaleDateString() %> gacha</span>
+                <small id="queue-status" style="color: var(--red); font-weight: bold; font-size: 0.85rem;">Holat: Offline</small>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="online-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="active-order-info" id="activeOrderBox">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <small style="color: #94a3b8;">MIJOZ:</small>
+                    <h3 id="activeClientName" style="color: white; margin: 2px 0;">---</h3>
+                    <p id="activeClientAddr" style="font-size: 0.75rem; color: #cbd5e1;">---</p>
+                </div>
+                <div style="text-align: right;">
+                    <b id="activeClientDist" style="color: var(--gold); font-size: 1.1rem;">0.0 km</b>
+                </div>
+            </div>
+            <div class="contact-btns">
+                <a href="#" id="callClientBtn" class="call-btn">📞 QO'NG'IROQ</a>
+                <a href="#" id="openNavBtn" class="nav-btn" target="_blank">🗺 NAVIGATOR</a>
+                <button class="chat-btn" id="arrivedBtn" onclick="sendArrivedMsg()">💬 KELDIM</button>
+            </div>
+        </div>
+
+        <div class="taximeter-section">
+            <div class="taximeter-box">
+                <div class="price" id="cost">0</div>
+                <span class="currency" id="price-label">SO'M</span>
+                <div class="btn-group">
+                 <button class="btn btn-start" id="startBtn" onclick="startRide()" style="display:none;">MIJOZ O'TIRDI</button>
+                <button class="btn btn-stop" id="stopBtn" onclick="stopRide()" style="display:none;">SAFARNI TUGATISH</button>
+            </div>
+            </div>
+        </div>
+
+        <div class="orders-container" id="orders-box">
+            <div id="orders-list" style="text-align: center; color: #64748b; margin-top: 20px;">
+                Buyurtmalar navbat asosida yuboriladi...
+            </div>
+        </div>
+
+        <div class="stats-footer" onclick="openReport()">
+            <div class="stat-item"><small>BUGUN</small><b><%= driver.statistics.todayEarned.toLocaleString() %></b></div>
+            <div class="stat-item"><small>SAFARLAR</small><b><%= driver.statistics.totalTrips %></b></div>
+            <div class="stat-item"><small>HISOBOT</small><b>KO'RISH 📊</b></div>
+        </div>
+    </div>
+
+    <div id="orderModal">
+        <div class="modal-content">
+            <h3 style="color:var(--gold); margin-bottom:15px;">Yangi Buyurtma! 🚕</h3>
+            <p id="modalText" style="color:white; font-size:0.95rem; margin-bottom:20px; line-height:1.6;"></p>
+            <div style="display:flex; gap:12px;">
+                <button class="btn" onclick="closeModal()" style="background:#475569; color: white;">O'TKAZISH</button>
+                <button class="btn btn-start" id="confirmRideBtn">QABUL QILISH</button>
+            </div>
+            <div class="timer-bar" id="modalTimerBar"></div>
+        </div>
+    </div>
+
+    <div id="finishModal">
+    <div class="receipt-card">
+        <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+        <h2>Safar Tugadi!</h2>
+        <div style="border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 20px 0; margin: 20px 0;">
+            <p>Masofa: <b id="final-dist">0</b> km</p>
+            <p>To'lov: <b id="final-amount" style="color: var(--green); font-size: 1.6rem;">0</b></p>
+        </div>
+        <button class="btn btn-start" style="width: 100%;" onclick="closeFinishModal()">YOPISH</button>
+    </div>
+</div>
+
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const driverId = '<%= driver._id %>';
+    const ORDER_LIFETIME = 15000;
+    const orderTimers = new Map();
+    function setOnlineUIState(online) {
+    const statusLabel = document.getElementById('queue-status');
+    const ordersBox = document.getElementById('orders-box');
+    const onlineSwitch = document.getElementById('online-switch');
+
+    isOnline = online;
+    onlineSwitch.checked = online;
+
+    if (online) {
+        statusLabel.innerText = "Navbatda: Qidirilmoqda...";
+        statusLabel.style.color = "var(--green)";
+        ordersBox.style.display = "block";
+    } else {
+        statusLabel.innerText = "Holat: Offline";
+        statusLabel.style.color = "var(--red)";
+        ordersBox.style.display = "none";
+    }
+}
+    
+    // O'zgaruvchilar
+    let isOnline = false;
+    let watchId = null;
+    let totalDistance = 0;
+    let lastCoords = null;
+    let currentMoney = 0;
+    let currentOrderData = null;
+    let timerInterval = null;
+    let locationInterval = null;
+
+    // Narxlar (Serverdan kelgan)
+    const pricePerKm = Number('<%= settings.pricePerKm %>') || 1000;
+    const baseFare = 2500;
+    // 1. ONLINE/OFFLINE REJIM
+    document.getElementById('online-switch').addEventListener('change', function() {
+    const statusLabel = document.getElementById('queue-status');
+    const ordersBox = document.getElementById('orders-box');
+
+    if (this.checked) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+            setOnlineUIState(true);
+            localStorage.setItem('driverOnlineState', 'true');
+
+            socket.emit('driver_online', { 
+                driverId: driverId, 
+                lat: pos.coords.latitude, 
+                lon: pos.coords.longitude 
+            });
+
+            socket.emit('update_location', {
+                driverId: driverId,
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
+            });
+
+            startLocationTracking();
+        }, (err) => {
+            alert("GPS ruxsatnomasi zarur!");
+            this.checked = false;
+            setOnlineUIState(false);
+            localStorage.setItem('driverOnlineState', 'false');
+        }, { enableHighAccuracy: true });
+    } else {
+        setOnlineUIState(false);
+        localStorage.setItem('driverOnlineState', 'false');
+        socket.emit('driver_offline', { driverId: driverId });
+        stopLocationTracking();
+        ordersBox.style.display = "none";
+    }
+});
+
+    // 2. NAVBAT YANGILANISHI
+    socket.on('queue_update', (data) => {
+        if (data.driverId === driverId && isOnline) {
+            const statusLabel = document.getElementById('queue-status');
+            statusLabel.innerText = `Navbatingiz: ${data.position}-chi`;
+            statusLabel.style.color = "var(--gold)";
+        }
+    });
+
+    // 3. YANGI BUYURTMA KELGANDA (MODAL)
+    socket.on(`order_for_driver_${driverId}`, (data) => {
+    if (!isOnline) return;
+
+    addOrderToList(data);
+    playAlertSound();
+    openOrder(data);
+});
+
+ function addOrderToList(order) {
+    const list = document.getElementById("orders-list");
+
+    if (
+        list.innerText.includes("Buyurtmalar navbat asosida yuboriladi") ||
+        list.innerText.includes("Hozircha faol buyurtmalar yo'q")
+    ) {
+        list.innerHTML = "";
+    }
+
+    const existing = document.getElementById(`order-card-${order.clientId}`);
+    if (existing) return;
+
+    const card = document.createElement("div");
+    card.className = "order-card";
+    card.id = `order-card-${order.clientId}`;
+
+    const secondsId = `order-seconds-${order.clientId}`;
+    const progressId = `order-progress-${order.clientId}`;
+
+    card.innerHTML = `
+        <div style="flex:1; min-width:0;">
+            <div class="order-card-header">
+                <div class="order-avatar">🚕</div>
+                <div>
+                    <h4 class="order-client-name">${order.clientName || "Mijoz"}</h4>
+                    <div class="order-subtext">Yangi buyurtma yuborildi</div>
+                </div>
+            </div>
+
+            <div class="order-meta">
+                <span class="order-chip">📍 ${Number(order.distanceKm || 0).toFixed(1)} km</span>
+                <span class="order-chip">📞 ${order.phone || "Raqam yo'q"}</span>
+            </div>
+
+            <div class="order-note">
+                ${order.address || order.note || "Manzil ko‘rsatilmagan"}
+            </div>
+        </div>
+
+        <div class="order-right">
+            <div class="order-timer"><span id="${secondsId}">15</span>s</div>
+            <button type="button" class="view-order-btn">Ko'rish</button>
+        </div>
+
+        <div class="order-progress-wrap">
+            <div class="order-progress-bar" id="${progressId}"></div>
+        </div>
+    `;
+
+    const viewBtn = card.querySelector(".view-order-btn");
+    viewBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openOrder(order, card);
+    });
+
+    card.addEventListener("click", function () {
+        openOrder(order, card);
+    });
+
+    list.prepend(card);
+
+    startOrderCardTimer(order, card, secondsId, progressId);
+}
+
+function startOrderCardTimer(order, card, secondsId, progressId) {
+    const secondsEl = document.getElementById(secondsId);
+    const progressEl = document.getElementById(progressId);
+
+    if (!secondsEl || !progressEl) return;
+
+    const existingTimer = orderTimers.get(order.clientId);
+    if (existingTimer) {
+        clearInterval(existingTimer.interval);
+        clearTimeout(existingTimer.timeout);
+        orderTimers.delete(order.clientId);
+    }
+
+    const totalMs = ORDER_LIFETIME;
+    const startedAt = Date.now();
+
+    progressEl.style.transition = "none";
+    progressEl.style.transform = "scaleX(1)";
+
+    setTimeout(() => {
+        progressEl.style.transition = `transform ${ORDER_LIFETIME}ms linear`;
+        progressEl.style.transform = "scaleX(0)";
+    }, 50);
+
+    const interval = setInterval(() => {
+        const elapsed = Date.now() - startedAt;
+        const remainingMs = Math.max(0, totalMs - elapsed);
+        const sec = Math.ceil(remainingMs / 1000);
+
+        if (secondsEl) {
+            secondsEl.innerText = sec;
+        }
+
+        if (remainingMs <= 5000) {
+            card.classList.add("expiring");
+        }
+
+        if (remainingMs <= 0) {
+            clearInterval(interval);
+        }
+    }, 250);
+
+    const timeout = setTimeout(() => {
+        removeOrderCard(order.clientId);
+
+        socket.emit("order_ignored", {
+            driverId,
+            clientId: order.clientId
+        });
+
+        if (currentOrderData && currentOrderData.clientId === order.clientId) {
+            closeModal();
+            currentOrderData = null;
+        }
+    }, totalMs);
+
+    orderTimers.set(order.clientId, { interval, timeout });
+}
+
+function removeOrderCard(clientId) {
+    const timerData = orderTimers.get(clientId);
+    if (timerData) {
+        clearInterval(timerData.interval);
+        clearTimeout(timerData.timeout);
+        orderTimers.delete(clientId);
+    }
+
+    const card = document.getElementById(`order-card-${clientId}`);
+    if (card) {
+        card.classList.add("removing");
+
+        setTimeout(() => {
+            card.remove();
+
+            const list = document.getElementById("orders-list");
+            if (list.children.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align:center; color:#64748b; margin-top:20px;">
+                        Hozircha faol buyurtmalar yo'q
+                    </div>
+                `;
+            }
+        }, 250);
+    }
+}
+
+function openOrder(order, cardElement = null) {
+    currentOrderData = order;
+
+    document.getElementById("modalText").innerHTML = `
+        <div style="text-align:left; line-height:1.7;">
+            <div style="font-size:1.1rem; font-weight:800; color:var(--gold); margin-bottom:10px;">
+                ${order.clientName || "Mijoz"}
+            </div>
+            <div style="margin-bottom:8px;">📍 <b>Masofa:</b> ${Number(order.distanceKm || 0).toFixed(1)} km</div>
+            <div style="margin-bottom:8px;">📞 <b>Telefon:</b> ${order.phone || "Raqam mavjud emas"}</div>
+            <div style="margin-bottom:8px;">📌 <b>Manzil:</b> ${order.address || "Ko'rsatilmagan"}</div>
+            <div style="color:#cbd5e1; font-size:0.85rem;">
+                ${order.note || ""}
+            </div>
+        </div>
+    `;
+
+    document.getElementById("confirmRideBtn").onclick = () => {
+    acceptOrder(order, cardElement);
+};
+    document.getElementById("orderModal").style.display = "flex";
+}
+
+    // 4. BUYURTMANI QABUL QILISH
+    function acceptOrder(data, cardElement = null) {
+    currentOrderData = data;
+
+    const timerData = orderTimers.get(data.clientId);
+    if (timerData) {
+        clearInterval(timerData.interval);
+        clearTimeout(timerData.timeout);
+        orderTimers.delete(data.clientId);
+    }
+
+    socket.emit('accept_order', {
+        driverId: driverId,
+        clientId: data.clientId
+    });
+
+    removeOrderCard(data.clientId);
+    closeModal();
+
+    document.getElementById('activeOrderBox').style.display = 'block';
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('stopBtn').style.display = 'none';
+
+    document.getElementById('activeClientName').innerText = data.clientName || '---';
+    document.getElementById('activeClientAddr').innerText = data.address || data.note || 'Manzil ko‘rsatilmagan';
+    document.getElementById('activeClientDist').innerText = Number(data.distanceKm || 0).toFixed(1) + " km";
+    document.getElementById('callClientBtn').href = `tel:${data.phone || ''}`;
+
+    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${data.lat},${data.lon}&travelmode=driving`;
+    document.getElementById('openNavBtn').onclick = (e) => {
+        e.preventDefault();
+        window.open(navUrl, '_blank');
+    };
+
+    showToast("Buyurtma qabul qilindi");
+}
+
+    // 5. "KELDIM" TUGMASI
+    function sendArrivedMsg() {
+        if (!currentOrderData) return;
+        socket.emit('driver_arrived', { clientId: currentOrderData.clientId });
+        showToast("Mijozga xabar yuborildi!");
+    }
+
+    // 6. TAKSOMETRNI BOSHLASH
+    function startRide() {
+        socket.emit('taximeter_on', { clientId: currentOrderData.clientId });
+        
+        document.getElementById('activeOrderBox').style.display = 'none';
+        document.getElementById('startBtn').style.display = "none";
+        document.getElementById('stopBtn').style.display = "block";
+        
+        totalDistance = 0;
+        currentMoney = baseFare;
+        document.getElementById('cost').innerText = currentMoney.toLocaleString();
+        
+        lastCoords = null;
+        startTaxisometrTracking();
+    }
+
+    // 7. REAL-VAQTDA MASOFANI O'LCHASH (TAKSOMETR)
+    function startTaxisometrTracking() {
+        if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+        
+        watchId = navigator.geolocation.watchPosition((pos) => {
+            const current = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+            
+            if (lastCoords) {
+                const dist = calculateDistance(lastCoords.lat, lastCoords.lon, current.lat, current.lon);
+                
+                // Faqat 10 metrdan ko'p yursa hisoblaydi (sakrashlarni oldini olish uchun)
+                if (dist > 0.01 && dist < 1) {
+                    totalDistance += dist;
+                    currentMoney = baseFare + (totalDistance * pricePerKm);
+                    
+                    // Pulni yaxlitlash (masalan: 12,450 -> 12,500)
+                    const roundedMoney = Math.round(currentMoney / 100) * 100;
+                    document.getElementById('cost').innerText = roundedMoney.toLocaleString();
+                }
+            }
+            lastCoords = current;
+        }, (err) => console.error(err), { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+    }
+
+    // 8. SAFARNI TUGATISH
+    function stopRide() {
+    if (!currentOrderData) return;
+
+    if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+
+    const finalDistance = totalDistance;
+    const finalAmount = Math.round((baseFare + (finalDistance * pricePerKm)) / 100) * 100;
+    const clientId = currentOrderData.clientId;
+
+    socket.emit('finish_trip_and_pay', { 
+        driverId,
+        clientId,
+        amount: finalAmount,
+        distance: finalDistance.toFixed(2)
+    });
+
+    document.getElementById('final-dist').innerText = finalDistance.toFixed(2);
+    document.getElementById('final-amount').innerText = finalAmount.toLocaleString() + " so'm";
+    document.getElementById('finishModal').style.display = "flex";
+
+    document.getElementById('activeOrderBox').style.display = 'none';
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'none';
+
+    currentOrderData = null;
+    totalDistance = 0;
+    lastCoords = null;
+    currentMoney = 0;
+
+     if (isOnline) {
+    document.getElementById('queue-status').innerText = "Navbatda: Buyurtma kutmoqda...";
+    document.getElementById('queue-status').style.color = "var(--green)";
+}
+}
+
+    // MATEMATIK FUNKSIYALAR
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Yer radiusi km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function playAlertSound() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, context.currentTime);
+            osc.connect(context.destination);
+            osc.start();
+            osc.stop(context.currentTime + 1);
+        } catch(e) {}
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('custom-toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+   function closeModal() {
+    document.getElementById('orderModal').style.display = 'none';
+}
+
+function closeFinishModal() {
+    document.getElementById('finishModal').style.display = 'none';
+    document.getElementById('cost').innerText = '0';
+
+    if (isOnline) {
+        document.getElementById('orders-box').style.display = 'block';
+        document.getElementById('queue-status').innerText = "Navbatda: Buyurtma kutmoqda...";
+        document.getElementById('queue-status').style.color = "var(--green)";
+    } else {
+        document.getElementById('queue-status').innerText = "Holat: Offline";
+        document.getElementById('queue-status').style.color = "var(--red)";
+    }
+}
+
+function stopLocationTracking(){
+
+ if(locationInterval){
+  clearInterval(locationInterval);
+  locationInterval = null;
+ }
+
+ if(watchId){
+  navigator.geolocation.clearWatch(watchId);
+  watchId = null;
+ }
+
+}
+    function startLocationTracking() {
+
+ if(locationInterval) clearInterval(locationInterval);
+
+ locationInterval = setInterval(() => {
+
+  if (isOnline) {
+
+   navigator.geolocation.getCurrentPosition(pos => {
+
+    socket.emit('update_location', {
+     driverId: driverId,
+     lat: pos.coords.latitude,
+     lon: pos.coords.longitude
+    });
+
+   });
+
+  }
+
+ }, 10000);
+
+}
+
+window.addEventListener('load', () => {
+    const savedOnlineState = localStorage.getItem('driverOnlineState');
+
+    if (savedOnlineState === 'true') {
+        navigator.geolocation.getCurrentPosition((pos) => {
+            setOnlineUIState(true);
+
+            socket.emit('driver_online', { 
+                driverId: driverId, 
+                lat: pos.coords.latitude, 
+                lon: pos.coords.longitude 
+            });
+
+            socket.emit('update_location', {
+                driverId: driverId,
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
+            });
+
+            startLocationTracking();
+        }, () => {
+            setOnlineUIState(false);
+            localStorage.setItem('driverOnlineState', 'false');
+        }, { enableHighAccuracy: true });
+    } else {
+        setOnlineUIState(false);
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>ElTaksi - Ro'yxatdan o'tish</title>
+
+<link rel="manifest" href="/manifest.json">
+
+<style>
+:root { --midnight:#0f172a; --gold:#fbbf24; --amber:#f59e0b; }
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#070b14;
+display:flex;
+align-items:center;
+justify-content:center;
+min-height:100vh;
+color:white;
+overflow:hidden;
+}
+
+.bg-glow{
+position:absolute;
+top:-10%;
+right:-10%;
+width:300px;
+height:300px;
+background:radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%);
+}
+
+.form-card{
+background:rgba(15,23,42,0.85);
+padding:40px 30px;
+border-radius:35px;
+width:90%;
+max-width:400px;
+border:1px solid rgba(251,191,36,0.15);
+backdrop-filter:blur(20px);
+box-shadow:0 25px 50px rgba(0,0,0,0.6);
+animation:fadeIn .6s ease;
+z-index:2;
+}
+
+.logo-area{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo-area h2{
+color:var(--gold);
+font-size:1.8rem;
+}
+
+.logo-area p{
+color:#94a3b8;
+font-size:.85rem;
+margin-top:5px;
+}
+
+.input-group{
+margin-bottom:25px;
+}
+
+.input-group label{
+display:block;
+font-size:.75rem;
+color:#64748b;
+margin-bottom:8px;
+margin-left:5px;
+text-transform:uppercase;
+}
+
+input{
+width:100%;
+padding:16px 20px;
+border-radius:18px;
+border:1px solid rgba(255,255,255,0.05);
+background:rgba(0,0,0,0.35);
+color:white;
+font-size:1rem;
+outline:none;
+transition:.3s;
+}
+
+input:focus{
+border-color:var(--gold);
+box-shadow:0 0 10px rgba(251,191,36,.2);
+}
+
+.next-btn{
+width:100%;
+padding:18px;
+border:none;
+border-radius:18px;
+background:linear-gradient(135deg,var(--gold),var(--amber));
+color:#0f172a;
+font-size:1.1rem;
+font-weight:800;
+cursor:pointer;
+margin-top:10px;
+transition:.3s;
+}
+
+.next-btn:hover{
+transform:translateY(-3px);
+}
+
+.footer-note{
+text-align:center;
+margin-top:25px;
+font-size:.75rem;
+color:#475569;
+}
+
+@keyframes fadeIn{
+from{opacity:0; transform:translateY(20px);}
+to{opacity:1; transform:translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="form-card">
+
+<div class="logo-area">
+<h2>ELTAKSI</h2>
+<p>Xush kelibsiz! Ma'lumotlarni kiriting</p>
+</div>
+
+<form id="regForm" action="/auth-mijoz" method="POST">
+
+<div class="input-group">
+<label>To'liq ismingiz</label>
+<input
+type="text"
+name="name"
+placeholder="Masalan: Azizbek"
+required
+minlength="3">
+</div>
+
+<div class="input-group">
+<label>Telefon raqamingiz</label>
+<input
+type="tel"
+name="phone"
+placeholder="+998901234567"
+required>
+</div>
+
+<button type="button" class="next-btn" id="installBtn">
+Davom etish & Ilovani o'rnatish
+</button>
+
+</form>
+
+<p class="footer-note">
+"Davom etish" tugmasini bosish orqali xizmat shartlariga rozilik bildirasiz
+</p>
+
+</div>
+
+<script>
+let deferredPrompt;
+
+// PWA service worker ro'yxatdan o'tishi
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js')
+  .then(()=>console.log('Service Worker ro‘yxatdan o‘tdi'))
+  .catch((err)=>console.log('SW xato:', err));
+}
+
+// beforeinstallprompt eventni ushlaymiz
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+// Tugma bosilganda form submit va PWA o‘rnatish
+document.getElementById('installBtn').addEventListener('click', async function(){
+  
+  // 1. Formani submit qilamiz
+  document.getElementById('regForm').submit();
+
+  // 2. Agar PWA prompt mavjud bo'lsa, foydalanuvchiga ko'rsatamiz
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    const choiceResult = await deferredPrompt.userChoice;
+    console.log('User choice:', choiceResult.outcome);
+    deferredPrompt = null;
+  }
+
+});
+</script>
+
+</body>
+</html>
