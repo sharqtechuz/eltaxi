@@ -291,6 +291,24 @@ app.get("/api/version", (req, res) => {
   res.json({ version: "1.0.0", minVersion: "1.0.0" });
 });
 
+app.get("/api/admin/stats", async (req, res) => {
+  try {
+    const customerCount = await Customer.countDocuments();
+    const onlineCount = await Driver.countDocuments({ isOnline: true });
+    const drivers = await Driver.find();
+    const totalEarnings = drivers.reduce((sum, d) => sum + (d.statistics?.todayEarned || 0), 0);
+    const totalTrips = drivers.reduce((sum, d) => sum + (d.statistics?.totalTrips || 0), 0);
+    res.json({
+      customerCount,
+      onlineCount,
+      totalEarnings,
+      totalTrips
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/api/admin/drivers", async (req, res) => {
   try {
     const drivers = await Driver.find().select("-password");
