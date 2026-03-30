@@ -570,10 +570,7 @@ let driverSockets = {};
 let customerSockets = {};
 let activeOrders = {};
 
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
-
-  async function emitOnlineCount() {
+async function emitOnlineCount() {
   try {
     const count = await Driver.countDocuments({ isOnline: true, isBlocked: false });
     io.emit("update_online_count", { count });
@@ -581,6 +578,9 @@ io.on("connection", (socket) => {
     console.log("emitOnlineCount error:", err);
   }
 }
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
 
   // ----------------------
   // MIJOZ ONLINE
