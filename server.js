@@ -313,6 +313,137 @@ app.get("/admin", async (req, res) => {
   res.render("admin", { drivers, customerCount, onlineCount, totalStats });
 });
 
+app.get("/admin/logout", (req, res) => {
+  req.session.adminLoggedIn = false;
+  res.redirect("/el-admin-portal");
+});
+
+app.post("/admin/update-balls", async (req, res) => {
+  try {
+    if (!req.session.adminLoggedIn) {
+      return res.status(401).json({ error: "Admin emas" });
+    }
+
+    const { driverId, balls } = req.body;
+
+    await Driver.findByIdAndUpdate(driverId, {
+      "statistics.balls": Number(balls || 0)
+    });
+
+    res.json({ success: true, message: "Ball yangilandi" });
+  } catch (err) {
+    console.log("update-balls error:", err);
+    res.status(500).json({ success: false, message: "Ball yangilanmadi" });
+  }
+});
+
+app.post("/admin/toggle-block-driver", async (req, res) => {
+  try {
+    if (!req.session.adminLoggedIn) {
+      return res.status(401).json({ error: "Admin emas" });
+    }
+
+    const { driverId, isBlocked } = req.body;
+
+    await Driver.findByIdAndUpdate(driverId, {
+      isBlocked: Boolean(isBlocked),
+      isOnline: Boolean(isBlocked) ? false : undefined
+    });
+
+    res.json({
+      success: true,
+      message: isBlocked ? "Haydovchi bloklandi" : "Haydovchi ochildi"
+    });
+  } catch (err) {
+    console.log("toggle-block-driver error:", err);
+    res.status(500).json({ success: false, message: "Bloklashda xatolik" });
+  }
+});
+
+app.post("/admin/delete-driver", async (req, res) => {
+  try {
+    if (!req.session.adminLoggedIn) {
+      return res.status(401).json({ error: "Admin emas" });
+    }
+
+    const { driverId } = req.body;
+
+    await Driver.findByIdAndDelete(driverId);
+
+    res.json({ success: true, message: "Haydovchi o'chirildi" });
+  } catch (err) {
+    console.log("delete-driver error:", err);
+    res.status(500).json({ success: false, message: "O'chirishda xatolik" });
+  }
+});
+
+app.post("/admin/update-settings", async (req, res) => {
+  try {
+    if (!req.session.adminLoggedIn) {
+      return res.status(401).json({ error: "Admin emas" });
+    }
+
+    const { baseFare, pricePerKm, minDist, waitPrice } = req.body;
+
+    await Settings.findOneAndUpdate(
+      {},
+      {
+        baseFare: Number(baseFare || 2500),
+        pricePerKm: Number(pricePerKm || 1000),
+        minDist: Number(minDist || 2),
+        waitPrice: Number(waitPrice || 500)
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({ success: true, message: "Sozlamalar saqlandi" });
+  } catch (err) {
+    console.log("update-settings error:", err);
+    res.status(500).json({ success: false, message: "Sozlamalarni saqlab bo'lmadi" });
+  }
+});
+
+app.post("/admin/send-message", async (req, res) => {
+  try {
+    if (!req.session.adminLoggedIn) {
+      return res.status(401).json({ error: "Admin emas" });
+    }
+
+    const { target, driverId, message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Xabar bo'sh" });
+    }
+
+    if (driverId) {
+      const socketId = driverSockets[String(driverId)];
+      if (socketId) {
+        io.to(socketId).emit("admin_message", { message });
+      }
+      return res.json({ success: true, message: "Haydovchiga yuborildi" });
+    }
+
+    if (target === "all_drivers") {
+      Object.values(driverSockets).forEach((socketId) => {
+        io.to(socketId).emit("admin_message", { message });
+      });
+      return res.json({ success: true, message: "Barcha haydovchilarga yuborildi" });
+    }
+
+    if (target === "all_customers") {
+      Object.values(customerSockets).forEach((socketId) => {
+        io.to(socketId).emit("admin_message", { message });
+      });
+      return res.json({ success: true, message: "Barcha mijozlarga yuborildi" });
+    }
+
+    res.status(400).json({ success: false, message: "Noto'g'ri target" });
+  } catch (err) {
+    console.log("send-message error:", err);
+    res.status(500).json({ success: false, message: "Xabar yuborilmadi" });
+  }
+});
+
 // ----------------------
 // ADMIN API (Mobile uchun)
 // ----------------------
