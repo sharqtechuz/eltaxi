@@ -36,11 +36,55 @@
         h2 { font-size: 1.5rem; margin-bottom: 8px; font-weight: 700; letter-spacing: 0.5px; }
         .info-text { font-size: 0.8rem; opacity: 0.5; margin-bottom: 25px; line-height: 1.4; }
         
-        .contact-box {
-            background: rgba(251, 191, 36, 0.07);
-            padding: 12px; border-radius: 15px; margin-bottom: 25px;
-            border: 1px dashed rgba(251, 191, 36, 0.3);
-        }
+        .contact-toggle-wrap {
+        margin-bottom: 25px;
+        text-align: center;
+}
+
+.contact-toggle-btn {
+    background: rgba(251, 191, 36, 0.08);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.contact-toggle-btn:hover {
+    background: rgba(251, 191, 36, 0.14);
+    transform: translateY(-1px);
+}
+
+.contact-dropdown {
+    display: none;
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.contact-dropdown.show {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-dropdown a {
+    color: #fbbf24;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.contact-dropdown a:hover {
+    opacity: 0.9;
+}
+
         .contact-box a {
         color: #fbbf24;
         text-decoration: none;
@@ -73,6 +117,12 @@
         .login-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 20px -3px rgba(245, 158, 11, 0.4); opacity: 0.9; }
     </style>
 </head>
+<script>
+function toggleAdminContact() {
+    const box = document.getElementById('adminContactBox');
+    box.classList.toggle('show');
+}
+</script>
 <body>
 
     <div class="login-card">
@@ -85,11 +135,16 @@
         Login yoki parol olish uchun admin bilan bog'laning
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-        <a href="tel:+998902777936">📞 Telefon 1: +998 90 277 79 36</a>
-        <a href="tel:+998907996066">📞 Telefon 2: +998 90 799 60 66</a>
-        <a href="https://t.me/username1" target="_blank">💬 Telegram 1: @uz_arli</a>
-        <a href="https://t.me/username2" target="_blank">💬 Telegram 2: @ramazonovdavron</a>
+    <div class="contact-toggle-wrap">
+    <button type="button" class="contact-toggle-btn" onclick="toggleAdminContact()">
+        Admin bilan bog'laning
+    </button>
+
+    <div class="contact-dropdown" id="adminContactBox">
+        <a href="tel:+998901112233">📞 +998 90 277 79 36</a>
+        <a href="tel:+998907778899">📞 +998 90 799 60 66</a>
+        <a href="https://t.me/username1" target="_blank">💬 @uz_arli</a>
+        <a href="https://t.me/username2" target="_blank">💬 @ramazonovdavron</a>
     </div>
 </div>
 
