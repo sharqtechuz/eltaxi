@@ -175,33 +175,64 @@ Davom etish & Ilovani o'rnatish
 <script>
 let deferredPrompt;
 
+const form = document.getElementById('regForm');
+const installBtn = document.getElementById('installBtn');
+const nameInput = document.querySelector('input[name="name"]');
+const phoneInput = document.querySelector('input[name="phone"]');
+
 // PWA service worker ro'yxatdan o'tishi
-if('serviceWorker' in navigator){
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
-  .then(()=>console.log('Service Worker ro‘yxatdan o‘tdi'))
-  .catch((err)=>console.log('SW xato:', err));
+    .then(() => console.log('Service Worker ro‘yxatdan o‘tdi'))
+    .catch((err) => console.log('SW xato:', err));
 }
 
+// Agar oldin saqlangan user bo‘lsa inputlarga avtomatik qo‘yib beramiz
+document.addEventListener('DOMContentLoaded', () => {
+  const savedName = localStorage.getItem('eltaksi_name');
+  const savedPhone = localStorage.getItem('eltaksi_phone');
+
+  if (savedName && nameInput) nameInput.value = savedName;
+  if (savedPhone && phoneInput) phoneInput.value = savedPhone;
+});
+
 // beforeinstallprompt eventni ushlaymiz
-window.addEventListener('beforeinstallprompt', (e)=>{
+window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 });
 
-// Tugma bosilganda form submit va PWA o‘rnatish
-document.getElementById('installBtn').addEventListener('click', async function(){
-  
-  // 1. Formani submit qilamiz
-  document.getElementById('regForm').submit();
+// Tugma bosilganda:
+// 1) inputlarni tekshiramiz
+// 2) localStorage ga saqlaymiz
+// 3) keyin formani yuboramiz
+// 4) agar mumkin bo‘lsa PWA install promptni chiqaramiz
+installBtn.addEventListener('click', async function (e) {
+  e.preventDefault();
 
-  // 2. Agar PWA prompt mavjud bo'lsa, foydalanuvchiga ko'rsatamiz
-  if(deferredPrompt){
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+
+  localStorage.setItem('eltaksi_name', name);
+  localStorage.setItem('eltaksi_phone', phone);
+
+  if (deferredPrompt) {
     deferredPrompt.prompt();
-    const choiceResult = await deferredPrompt.userChoice;
-    console.log('User choice:', choiceResult.outcome);
+    try {
+      const choiceResult = await deferredPrompt.userChoice;
+      console.log('User choice:', choiceResult.outcome);
+    } catch (err) {
+      console.log('Install prompt xato:', err);
+    }
     deferredPrompt = null;
   }
 
+  form.submit();
 });
 </script>
 
