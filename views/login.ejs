@@ -41,7 +41,14 @@
             padding: 12px; border-radius: 15px; margin-bottom: 25px;
             border: 1px dashed rgba(251, 191, 36, 0.3);
         }
-        .contact-box a { color: #fbbf24; text-decoration: none; font-weight: 600; font-size: 0.85rem; }
+        .contact-box a {
+        color: #fbbf24;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: block;
+        line-height: 1.4;
+        }
 
         .input-group { position: relative; margin-bottom: 20px; }
         
@@ -74,8 +81,17 @@
         <p class="info-text">Kirish uchun ofis tomonidan berilgan login va parolni kiriting.</p>
 
         <div class="contact-box">
-            <a href="tel:+998901234567">Ofis bilan bog'lanish</a>
-        </div>
+    <div style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 10px; line-height: 1.4;">
+        Login yoki parol olish uchun admin bilan bog'laning
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <a href="tel:+998902777936">📞 Telefon 1: +998 90 277 79 36</a>
+        <a href="tel:+998907996066">📞 Telefon 2: +998 90 799 60 66</a>
+        <a href="https://t.me/username1" target="_blank">💬 Telegram 1: @uz_arli</a>
+        <a href="https://t.me/username2" target="_blank">💬 Telegram 2: @ramazonovdavron</a>
+    </div>
+</div>
 
        <form action="/driver-auth" method="POST">
 
