@@ -10,14 +10,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
 // ----------------------
 // MODELLAR
 // ----------------------
@@ -277,7 +269,7 @@ app.get("/driver-dashboard", async (req, res) => {
 
         res.render("driver-dashboard", {
             driver,
-            settings: settings || { pricePerKm: 2000, baseFare: 5000 }, // Xato bermasligi uchun default qiymat
+            settings: settings || { pricePerKm: 1000, baseFare: 2500 }, // Xato bermasligi uchun default qiymat
             remainingDays: remainingDays > 0 ? remainingDays : 0,
             queuePosition: 0,
         });
@@ -346,14 +338,16 @@ app.post("/admin/toggle-block-driver", async (req, res) => {
     const { driverId, isBlocked } = req.body;
 
     await Driver.findByIdAndUpdate(driverId, {
-      isBlocked: Boolean(isBlocked),
-      isOnline: Boolean(isBlocked) ? false : undefined
-    });
+  isBlocked: Boolean(isBlocked),
+  isOnline: Boolean(isBlocked) ? false : undefined
+});
 
-    res.json({
-      success: true,
-      message: isBlocked ? "Haydovchi bloklandi" : "Haydovchi ochildi"
-    });
+await emitOnlineCount();
+
+res.json({
+  success: true,
+  message: isBlocked ? "Haydovchi bloklandi" : "Haydovchi ochildi"
+});
   } catch (err) {
     console.log("toggle-block-driver error:", err);
     res.status(500).json({ success: false, message: "Bloklashda xatolik" });
@@ -368,9 +362,11 @@ app.post("/admin/delete-driver", async (req, res) => {
 
     const { driverId } = req.body;
 
-    await Driver.findByIdAndDelete(driverId);
+   await Driver.findByIdAndDelete(driverId);
 
-    res.json({ success: true, message: "Haydovchi o'chirildi" });
+await emitOnlineCount();
+
+res.json({ success: true, message: "Haydovchi o'chirildi" });
   } catch (err) {
     console.log("delete-driver error:", err);
     res.status(500).json({ success: false, message: "O'chirishda xatolik" });
@@ -577,6 +573,15 @@ let activeOrders = {};
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
+  async function emitOnlineCount() {
+  try {
+    const count = await Driver.countDocuments({ isOnline: true, isBlocked: false });
+    io.emit("update_online_count", { count });
+  } catch (err) {
+    console.log("emitOnlineCount error:", err);
+  }
+}
+
   // ----------------------
   // MIJOZ ONLINE
   // ----------------------
@@ -615,13 +620,14 @@ io.on("connection", (socket) => {
     onlineQueue.push(driverId);
   }
 
-  io.emit("queue_update", {
-    driverId,
-    position: onlineQueue.indexOf(driverId) + 1
-  });
-
-  console.log("Driver online:", driverId, socket.id, onlineQueue);
+ io.emit("queue_update", {
+  driverId,
+  position: onlineQueue.indexOf(driverId) + 1
 });
+
+await emitOnlineCount();
+
+console.log("Driver online:", driverId, socket.id, onlineQueue);
 
   // ----------------------
   // HAYDOVCHI OFFLINE
@@ -632,11 +638,12 @@ io.on("connection", (socket) => {
 
     await Driver.findByIdAndUpdate(driverId, { isOnline: false });
 
-    onlineQueue = onlineQueue.filter((id) => id !== driverId);
-    delete driverSockets[driverId];
+onlineQueue = onlineQueue.filter((id) => id !== driverId);
+delete driverSockets[driverId];
 
-    console.log("Driver offline:", driverId);
-  });
+await emitOnlineCount();
+
+console.log("Driver offline:", driverId);
 
   // ----------------------
   // BUYURTMA YUBORISH
@@ -1023,10 +1030,11 @@ io.on("connection", (socket) => {
       console.log("Socket disconnected:", socket.id);
 
       if (socket.driverId) {
-        await Driver.findByIdAndUpdate(socket.driverId, { isOnline: false });
-        onlineQueue = onlineQueue.filter((id) => id !== socket.driverId);
-        delete driverSockets[socket.driverId];
-      }
+  await Driver.findByIdAndUpdate(socket.driverId, { isOnline: false });
+  onlineQueue = onlineQueue.filter((id) => id !== socket.driverId);
+  delete driverSockets[socket.driverId];
+  await emitOnlineCount();
+}
 
       if (socket.customerId) {
         delete customerSockets[socket.customerId];
