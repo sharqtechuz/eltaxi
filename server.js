@@ -628,6 +628,7 @@ io.on("connection", (socket) => {
 await emitOnlineCount();
 
 console.log("Driver online:", driverId, socket.id, onlineQueue);
+    });
 
   // ----------------------
   // HAYDOVCHI OFFLINE
@@ -644,6 +645,7 @@ delete driverSockets[driverId];
 await emitOnlineCount();
 
 console.log("Driver offline:", driverId);
+    });
 
   // ----------------------
   // BUYURTMA YUBORISH
