@@ -4,6 +4,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const session = require("express-session");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 const server = http.createServer(app);
@@ -107,13 +108,19 @@ app.set("trust proxy", 1);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use(
   session({
     secret: "eltaxi_secret_2026",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 30
+    }
   })
 );
 
@@ -122,17 +129,47 @@ app.use(
 // ----------------------
 app.get("/", (req, res) => res.render("index"));
 
+async function restoreCustomerSession(req) {
+  try {
+    if (req.session.customerId) {
+      const customer = await Customer.findById(req.session.customerId);
+      if (customer) return customer;
+    }
+
+    const phoneFromCookie = req.cookies?.eltaksi_customer_phone;
+    if (!phoneFromCookie) return null;
+
+    const customer = await Customer.findOne({ phone: phoneFromCookie });
+    if (!customer) return null;
+
+    req.session.customerId = customer._id;
+    return customer;
+  } catch (err) {
+    console.log("restoreCustomerSession error:", err);
+    return null;
+  }
+}
+
 // ----------------------
 // MIJOZ
 // ----------------------
 app.get("/mijoz", async (req, res) => {
-  const customer = req.session.customerId
-    ? await Customer.findById(req.session.customerId)
-    : null;
+  try {
+    const customer = await restoreCustomerSession(req);
 
-  res.render("mijoz", {
-    customer: customer || { name: "", balls: 0 },
-  });
+    if (customer) {
+      return res.redirect("/dashboard");
+    }
+
+    res.render("mijoz", {
+      customer: { name: "", balls: 0 },
+    });
+  } catch (err) {
+    console.log("/mijoz xato:", err);
+    res.render("mijoz", {
+      customer: { name: "", balls: 0 },
+    });
+  }
 });
 
 app.post("/auth-mijoz", async (req, res) => {
@@ -147,13 +184,20 @@ app.post("/auth-mijoz", async (req, res) => {
 
     const customer = await Customer.findOneAndUpdate(
       { phone },
-      { name },
+      { name, phone },
       { upsert: true, new: true }
     );
 
     console.log("AUTH-MIJOZ customer:", customer);
 
     req.session.customerId = customer._id;
+
+    res.cookie("eltaksi_customer_phone", customer.phone, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 30
+    });
+
     return res.redirect("/pwa-install");
   } catch (err) {
     console.error("AUTH-MIJOZ XATO:", err);
@@ -163,11 +207,8 @@ app.post("/auth-mijoz", async (req, res) => {
 
 app.get("/pwa-install", async (req, res) => {
   try {
-    if (!req.session.customerId) {
-      return res.redirect("/mijoz");
-    }
+    const customer = await restoreCustomerSession(req);
 
-    const customer = await Customer.findById(req.session.customerId);
     if (!customer) {
       return res.redirect("/mijoz");
     }
@@ -181,11 +222,7 @@ app.get("/pwa-install", async (req, res) => {
 
 app.get("/dashboard", async (req, res) => {
   try {
-    if (!req.session.customerId) {
-      return res.redirect("/mijoz");
-    }
-
-    const customer = await Customer.findById(req.session.customerId);
+    const customer = await restoreCustomerSession(req);
     const settings = await Settings.findOne();
 
     if (!customer) {
@@ -201,7 +238,7 @@ app.get("/dashboard", async (req, res) => {
 
     res.render("dashboard", {
       customer,
-      settings: settings || { pricePerKm: 2000, baseFare: 5000 },
+      settings: settings || { pricePerKm: 1000, baseFare: 2500 },
       availableCars
     });
   } catch (err) {
