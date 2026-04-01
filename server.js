@@ -292,28 +292,26 @@ app.post("/driver-auth", async (req, res) => {
   }
 });
 app.get("/driver-dashboard", async (req, res) => {
-    if (!req.session.driverId) return res.redirect("/login");
-    
-    try {
-        const driver = await Driver.findById(req.session.driverId);
-        const settings = await Settings.findOne(); // MUHIM: Tariflarni settingsdan olamiz
+  try {
+    const driver = await restoreDriverSession(req);
+    if (!driver) return res.redirect("/login");
 
-        if (!driver) return res.redirect("/login");
+    const settings = await Settings.findOne();
 
-        const remainingDays = Math.ceil(
-            (driver.subscriptionUntil - new Date()) / (1000 * 60 * 60 * 24)
-        );
+    const remainingDays = Math.ceil(
+      (driver.subscriptionUntil - new Date()) / (1000 * 60 * 60 * 24)
+    );
 
-        res.render("driver-dashboard", {
-            driver,
-            settings: settings || { pricePerKm: 1000, baseFare: 2500 }, // Xato bermasligi uchun default qiymat
-            remainingDays: remainingDays > 0 ? remainingDays : 0,
-            queuePosition: 0,
-        });
-    } catch (err) {
-        console.log("Dashboard xatosi:", err);
-        res.redirect("/login");
-    }
+    res.render("driver-dashboard", {
+      driver,
+      settings: settings || { pricePerKm: 1000, baseFare: 2500 },
+      remainingDays: remainingDays > 0 ? remainingDays : 0,
+      queuePosition: 0,
+    });
+  } catch (err) {
+    console.log("Dashboard xatosi:", err);
+    res.redirect("/login");
+  }
 });
 
 // ----------------------
