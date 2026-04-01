@@ -7,6 +7,10 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAm2vpnqB_zGp1hQ6xZmpOJjo5zxJsMaE&libraries=geometry"></script>
     
     <title>ElTaksi - Haydovchi Ishchi Oynasi</title>
+    <link rel="manifest" href="/driver-manifest.json">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
         :root { --midnight: #0f172a; --gold: #fbbf24; --green: #22c55e; --red: #ef4444; --slate: #1e293b; --white: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
@@ -851,6 +855,15 @@ window.addEventListener('load', () => {
         setOnlineUIState(false);
     }
 });
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js")
+        .then((reg) => console.log("SW ulandi:", reg.scope))
+        .catch((err) => console.log("SW xato:", err));
+    });
+  }
 </script>
 </body>
 </html>
