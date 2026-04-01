@@ -300,7 +300,7 @@ app.post("/driver-auth", async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24 * 30
     });
 
-    res.redirect("/driver-dashboard");
+    res.redirect("/driver-pwa-install");
   } catch (err) {
     console.log("driver-auth error:", err);
     res.status(500).send("Haydovchi login xatosi");
