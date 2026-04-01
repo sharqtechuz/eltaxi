@@ -255,10 +255,18 @@
         .bar { width: 100%; background: linear-gradient(to top, var(--gold), #fcd34d); border-radius: 6px 6px 2px 2px; min-height: 5px; }
 
         .stats-footer { 
-            display: flex; justify-content: space-around; padding: 18px; 
-            background: rgba(255,255,255,0.04); border-top: 1px solid rgba(251, 191, 36, 0.15);
-            cursor: pointer; margin-top: auto;
-        }
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(251, 191, 36, 0.15);
+    margin-top: auto;
+    text-align: center;
+}
+
+.copyright-footer {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
         .timer-bar { position: absolute; bottom: 0; left: 0; height: 6px; background: var(--gold); width: 100%; border-radius: 0 0 24px 24px; transition: width 15s linear; }
         #custom-toast { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; padding: 12px 28px; border-radius: 12px; font-weight: bold; z-index: 10002; display: none; }
 
@@ -320,11 +328,9 @@
             </div>
         </div>
 
-        <div class="stats-footer" onclick="openReport()">
-            <div class="stat-item"><small>BUGUN</small><b><%= driver.statistics.todayEarned.toLocaleString() %></b></div>
-            <div class="stat-item"><small>SAFARLAR</small><b><%= driver.statistics.totalTrips %></b></div>
-            <div class="stat-item"><small>HISOBOT</small><b>KO'RISH 📊</b></div>
-        </div>
+        <div class="stats-footer copyright-footer">
+    © 2026 SharqTech. Barcha huquqlar himoyalangan.
+</div>
     </div>
 
     <div id="orderModal">
