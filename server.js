@@ -270,15 +270,27 @@ app.get("/dashboard", async (req, res) => {
 app.get("/login", (req, res) => res.render("login"));
 
 app.post("/driver-auth", async (req, res) => {
-  const { login, password } = req.body;
-  const driver = await Driver.findOne({ login, password });
-  if (!driver) return res.send("Login yoki parol xato");
-  if (driver.isBlocked) return res.send("Profil bloklangan");
+  try {
+    const { login, password } = req.body;
+    const driver = await Driver.findOne({ login, password });
 
-  req.session.driverId = driver._id;
-  res.redirect("/driver-dashboard");
+    if (!driver) return res.send("Login yoki parol xato");
+    if (driver.isBlocked) return res.send("Profil bloklangan");
+
+    req.session.driverId = driver._id;
+
+    res.cookie("eltaksi_driver_login", driver.login, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 30
+    });
+
+    res.redirect("/driver-dashboard");
+  } catch (err) {
+    console.log("driver-auth error:", err);
+    res.status(500).send("Haydovchi login xatosi");
+  }
 });
-
 app.get("/driver-dashboard", async (req, res) => {
     if (!req.session.driverId) return res.redirect("/login");
     
