@@ -142,6 +142,31 @@ async function restoreCustomerSession(req) {
   }
 }
 
+async function restoreDriverSession(req) {
+  try {
+    if (req.session.driverId) {
+      const driver = await Driver.findById(req.session.driverId);
+      if (driver && !driver.isBlocked) return driver;
+    }
+
+    const loginFromCookie = req.cookies?.eltaksi_driver_login;
+    if (!loginFromCookie) return null;
+
+    const driver = await Driver.findOne({
+      login: loginFromCookie,
+      isBlocked: false
+    });
+
+    if (!driver) return null;
+
+    req.session.driverId = driver._id;
+    return driver;
+  } catch (err) {
+    console.log("restoreDriverSession error:", err);
+    return null;
+  }
+}
+
 // ----------------------
 // MIJOZ
 // ----------------------
