@@ -81,11 +81,10 @@
     }
 
     .install-btn {
-      background: #fbbf24;
-      color: #000;
-      display: none;
-    }
-
+  background: #fbbf24;
+  color: #000;
+  display: inline-block;
+}
     .skip-btn {
       display: inline-block;
       width: 100%;
@@ -114,9 +113,7 @@
       Haydovchi panelini telefon ekraniga o‘rnatib ishlatishingiz mumkin.
     </p>
 
-    <button id="installBtn" class="btn install-btn">Ilovani o‘rnatish</button>
-
-    <a href="/driver-dashboard" class="btn skip-btn">Dashboardga o‘tish</a>
+    <button id="installBtn" class="btn install-btn" type="button">Ilovani o‘rnatish</button>
 
     <div class="hint">
       Tugma chiqmasa, brauzer menyusidan
@@ -124,26 +121,29 @@
     </div>
   </div>
 
-  <script>
-    let deferredPrompt = null;
-    const installBtn = document.getElementById("installBtn");
+ <script>
+  let deferredPrompt = null;
+  const installBtn = document.getElementById("installBtn");
 
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = "block";
-    });
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
 
-    installBtn.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.style.display = "none";
+  installBtn.addEventListener("click", async () => {
+    try {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
 
       window.location.href = "/driver-dashboard";
-    });
-  </script>
+    } catch (err) {
+      console.log("Install prompt error:", err);
+      window.location.href = "/driver-dashboard";
+    }
+  });
+</script>
 </body>
 </html>
