@@ -1,5 +1,6 @@
 {
-  "name": "ElTaksi Driver",
+  "id": "/driver",
+  "name": "EL TaksiDriver",
   "short_name": "Driver",
   "start_url": "/driver-dashboard",
   "display": "standalone",
