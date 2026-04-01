@@ -14,7 +14,7 @@
     <style>
         :root { --midnight: #0f172a; --gold: #fbbf24; --green: #22c55e; --red: #ef4444; --slate: #1e293b; --white: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #070b14; display: flex; justify-content: center; min-height: 100vh; color: white; overflow-x: hidden; }
+        body { background: #070b14; display: flex; justify-content: center; min-height: 100vh; color: white; overflow-x: hidden; padding-bottom: 38px; }
 
         .mobile-container {
             width: 100%; max-width: 450px; background: var(--midnight);
@@ -254,12 +254,23 @@
         }
         .bar { width: 100%; background: linear-gradient(to top, var(--gold), #fcd34d); border-radius: 6px 6px 2px 2px; min-height: 5px; }
 
-        .stats-footer { 
-    padding: 16px 18px;
-    background: rgba(255,255,255,0.04);
-    border-top: 1px solid rgba(251, 191, 36, 0.15);
-    margin-top: auto;
+     .copyright-footer {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 426px;
     text-align: center;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    z-index: 50;
+    pointer-events: none;
 }
 
 .copyright-footer {
