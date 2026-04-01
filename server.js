@@ -237,6 +237,21 @@ app.get("/pwa-install", async (req, res) => {
   }
 });
 
+app.get("/driver-pwa-install", async (req, res) => {
+  try {
+    const driver = await restoreDriverSession(req);
+
+    if (!driver) {
+      return res.redirect("/login");
+    }
+
+    res.render("driver-pwa-install", { driver });
+  } catch (err) {
+    console.log("Driver PWA install xato:", err);
+    res.status(500).send("Driver PWA install sahifa xatosi");
+  }
+});
+
 app.get("/dashboard", async (req, res) => {
   try {
     const customer = await restoreCustomerSession(req);
