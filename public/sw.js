@@ -1,6 +1,12 @@
-const CACHE_NAME = "eltaksi-static-v1";
+const CACHE_NAME = "eltaksi-v2";
 const urlsToCache = [
   "/",
+  "/mijoz",
+  "/dashboard",
+  "/pwa-install",
+  "/login",
+  "/driver-pwa-install",
+  "/driver-dashboard",
   "/manifest.json",
   "/driver-manifest.json",
   "/icon-192.png",
