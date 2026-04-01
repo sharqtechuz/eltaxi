@@ -614,6 +614,21 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+function getCityFromCoords(lat, lon) {
+  // Toshkent atrofidagi taxminiy hudud
+  if (lat >= 41.15 && lat <= 41.45 && lon >= 69.10 && lon <= 69.45) {
+    return "toshkent";
+  }
+
+  // Farg'ona atrofidagi taxminiy hudud
+  if (lat >= 40.30 && lat <= 40.50 && lon >= 71.65 && lon <= 71.90) {
+    return "fargona";
+  }
+
+  return "other";
+}
+
 // REALTIME (Socket.io)
 let onlineQueue = [];
 let driverSockets = {};
@@ -716,18 +731,28 @@ console.log("Driver offline:", driverId);
     if (!customerId || isNaN(customerLat) || isNaN(customerLon)) return;
 
     const customer = await Customer.findById(customerId);
+    const customerCity = getCityFromCoords(customerLat, customerLon);
 
     let onlineDrivers = await Driver.find({
-      isOnline: true,
-      isBlocked: false,
-      "currentLocation.lat": { $ne: null },
-      "currentLocation.lon": { $ne: null }
-    });
+  isOnline: true,
+  isBlocked: false,
+  "currentLocation.lat": { $ne: null },
+  "currentLocation.lon": { $ne: null }
+});
 
-    if (!onlineDrivers.length) {
-      socket.emit("no_driver_available");
-      return;
-    }
+onlineDrivers = onlineDrivers.filter((driver) => {
+  const driverCity = getCityFromCoords(
+    Number(driver.currentLocation.lat),
+    Number(driver.currentLocation.lon)
+  );
+
+  return driverCity === customerCity;
+});
+
+if (!onlineDrivers.length) {
+  socket.emit("no_driver_available");
+  return;
+}
 
     const queueDrivers = onlineQueue
       .map((id) => onlineDrivers.find((d) => String(d._id) === String(id)))
