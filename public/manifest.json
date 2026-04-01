@@ -1,20 +1,21 @@
 {
-"name": "ElTaksi",
-"short_name": "ElTaksi",
-"start_url": "/dashboard",
-"display": "standalone",
-"background_color": "#0f172a",
-"theme_color": "#fbbf24",
-"icons": [
-{
-"src": "/icon-192.png",
-"sizes": "192x192",
-"type": "image/png"
-},
-{
-"src": "/icon-512.png",
-"sizes": "512x512",
-"type": "image/png"
-}
-]
+  "id": "/customer",
+  "name": "EL Taksi",
+  "short_name": "EL Taksi",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#fbbf24",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
