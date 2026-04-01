@@ -619,6 +619,7 @@ let onlineQueue = [];
 let driverSockets = {};
 let customerSockets = {};
 let activeOrders = {};
+let disconnectTimers = {};
 
 async function emitOnlineCount() {
   try {
@@ -657,6 +658,11 @@ io.on("connection", (socket) => {
 
   socket.driverId = driverId;
   driverSockets[driverId] = socket.id;
+
+      if (disconnectTimers[driverId]) {
+    clearTimeout(disconnectTimers[driverId]);
+    delete disconnectTimers[driverId];
+  }
 
   const updateData = { isOnline: true };
 
@@ -1081,11 +1087,27 @@ console.log("Driver offline:", driverId);
     try {
       console.log("Socket disconnected:", socket.id);
 
-      if (socket.driverId) {
-  await Driver.findByIdAndUpdate(socket.driverId, { isOnline: false });
-  onlineQueue = onlineQueue.filter((id) => id !== socket.driverId);
-  delete driverSockets[socket.driverId];
-  await emitOnlineCount();
+    if (socket.driverId) {
+  const driverId = String(socket.driverId);
+
+  delete driverSockets[driverId];
+
+  disconnectTimers[driverId] = setTimeout(async () => {
+    try {
+      const stillDisconnected = !driverSockets[driverId];
+
+      if (stillDisconnected) {
+        await Driver.findByIdAndUpdate(driverId, { isOnline: false });
+        onlineQueue = onlineQueue.filter((id) => id !== driverId);
+        await emitOnlineCount();
+        console.log("Driver offline after 2 minutes:", driverId);
+      }
+
+      delete disconnectTimers[driverId];
+    } catch (err) {
+      console.log("delayed disconnect error:", err);
+    }
+  }, 120000);
 }
 
       if (socket.customerId) {
