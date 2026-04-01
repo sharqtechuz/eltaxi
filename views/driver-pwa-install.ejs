@@ -145,5 +145,14 @@
     }
   });
 </script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js")
+        .then((reg) => console.log("SW ulandi:", reg.scope))
+        .catch((err) => console.log("SW xato:", err));
+    });
+  }
+</script>
 </body>
 </html>
