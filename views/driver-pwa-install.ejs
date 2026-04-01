@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElTaksi Driver - O‘rnatish</title>
+
+  <link rel="manifest" href="/driver-manifest.json">
+  <meta name="theme-color" content="#fbbf24">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, #0f172a, #111827);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 24px;
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.35);
+    }
+
+    .logo {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 18px;
+      border-radius: 22px;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+    }
+
+    h2 {
+      color: #fbbf24;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .driver-name {
+      color: white;
+      font-weight: bold;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 15px 18px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: 0.25s ease;
+    }
+
+    .install-btn {
+      background: #fbbf24;
+      color: #000;
+      display: none;
+    }
+
+    .skip-btn {
+      display: inline-block;
+      width: 100%;
+      text-decoration: none;
+      background: #1e293b;
+      color: white;
+      text-align: center;
+    }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">🚕</div>
+
+    <h2>Driver ilovasini o‘rnating</h2>
+
+    <p>
+      Salom, <span class="driver-name"><%= driver.driverName %></span>.<br>
+      Haydovchi panelini telefon ekraniga o‘rnatib ishlatishingiz mumkin.
+    </p>
+
+    <button id="installBtn" class="btn install-btn">Ilovani o‘rnatish</button>
+
+    <a href="/driver-dashboard" class="btn skip-btn">Dashboardga o‘tish</a>
+
+    <div class="hint">
+      Tugma chiqmasa, brauzer menyusidan
+      <b>Add to Home Screen</b> yoki <b>Install app</b> ni bosing.
+    </div>
+  </div>
+
+  <script>
+    let deferredPrompt = null;
+    const installBtn = document.getElementById("installBtn");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = "block";
+    });
+
+    installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = "none";
+
+      window.location.href = "/driver-dashboard";
+    });
+  </script>
+</body>
+</html>
