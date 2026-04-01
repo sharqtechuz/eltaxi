@@ -14,13 +14,19 @@
     <style>
         :root { --midnight: #0f172a; --gold: #fbbf24; --green: #22c55e; --red: #ef4444; --slate: #1e293b; --white: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: #070b14; display: flex; justify-content: center; min-height: 100vh; color: white; overflow-x: hidden; padding-bottom: 38px; }
+        body { background: #070b14; display: flex; justify-content: center; height: 100vh; color: white; overflow: hidden; }
 
         .mobile-container {
-            width: 100%; max-width: 450px; background: var(--midnight);
-            position: relative; display: flex; flex-direction: column;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); min-height: 100vh;
-        }
+    width: 100%;
+    max-width: 450px;
+    height: 100vh;
+    background: var(--midnight);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
 
         /* Xarita va Navigatsiya UI */
         #map-container { 
@@ -255,8 +261,8 @@
         .bar { width: 100%; background: linear-gradient(to top, var(--gold), #fcd34d); border-radius: 6px 6px 2px 2px; min-height: 5px; }
 
      .copyright-footer {
-    position: fixed;
-    bottom: 10px;
+    position: absolute;
+    bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 24px);
@@ -265,18 +271,12 @@
     color: #94a3b8;
     font-size: 0.72rem;
     line-height: 1.4;
-    padding: 6px 10px;
+    padding: 4px 8px;
     background: transparent;
     border: none;
     box-shadow: none;
     z-index: 50;
     pointer-events: none;
-}
-
-.copyright-footer {
-    color: #94a3b8;
-    font-size: 0.78rem;
-    line-height: 1.5;
 }
         .timer-bar { position: absolute; bottom: 0; left: 0; height: 6px; background: var(--gold); width: 100%; border-radius: 0 0 24px 24px; transition: width 15s linear; }
         #custom-toast { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; padding: 12px 28px; border-radius: 12px; font-weight: bold; z-index: 10002; display: none; }
