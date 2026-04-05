@@ -915,10 +915,13 @@ function openOrder(order, cardElement = null) {
 
     document.getElementById('activeClientName').innerText = data.clientName || '---';
     document.getElementById('activeClientAddr').innerText = data.address || data.note || 'Manzil ko‘rsatilmagan';
-    const orderTypeLabel =
-    String(data.type || '').toLowerCase() === 'dastafka' ? ' | Dastafka'
-    : String(data.type || '').toLowerCase() === 'delivery' ? ' | Dastafka'
-    : String(data.type || '').toLowerCase() === 'dostavka' ? ' | Dastafka'
+    const normalizedType = String(data.type || '').trim().toLowerCase();
+
+const orderTypeLabel =
+    normalizedType === 'dastavka' ? ' | Dastavka'
+    : normalizedType === 'dastafka' ? ' | Dastavka'
+    : normalizedType === 'dostavka' ? ' | Dastavka'
+    : normalizedType === 'delivery' ? ' | Dastavka'
     : '';
 
 document.getElementById('activeClientAddr').innerText =
@@ -1052,12 +1055,13 @@ document.getElementById('activeClientAddr').innerText =
     }
 
 function getEffectiveBaseFare() {
-    const orderType = String(currentOrderData?.type || '').toLowerCase();
+    const orderType = String(currentOrderData?.type || '').trim().toLowerCase();
 
     if (
+        orderType === 'dastavka' ||
         orderType === 'dastafka' ||
-        orderType === 'delivery' ||
-        orderType === 'dostavka'
+        orderType === 'dostavka' ||
+        orderType === 'delivery'
     ) {
         return baseFare * 2;
     }
