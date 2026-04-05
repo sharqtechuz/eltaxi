@@ -915,6 +915,14 @@ function openOrder(order, cardElement = null) {
 
     document.getElementById('activeClientName').innerText = data.clientName || '---';
     document.getElementById('activeClientAddr').innerText = data.address || data.note || 'Manzil ko‘rsatilmagan';
+    const orderTypeLabel =
+    String(data.type || '').toLowerCase() === 'dastafka' ? ' | Dastafka'
+    : String(data.type || '').toLowerCase() === 'delivery' ? ' | Dastafka'
+    : String(data.type || '').toLowerCase() === 'dostavka' ? ' | Dastafka'
+    : '';
+
+document.getElementById('activeClientAddr').innerText =
+    (data.address || data.note || 'Manzil ko‘rsatilmagan') + orderTypeLabel;
     document.getElementById('activeClientDist').innerText = Number(data.distanceKm || 0).toFixed(1) + " km";
     document.getElementById('callClientBtn').href = `tel:${data.phone || ''}`;
 
@@ -951,7 +959,7 @@ function openOrder(order, cardElement = null) {
         document.getElementById('stopBtn').style.display = "block";
 
         totalDistance = 0;
-        currentMoney = baseFare + waitingCharge;
+        currentMoney = getEffectiveBaseFare() + waitingCharge;
         document.getElementById('cost').innerText = currentMoney.toLocaleString();
 
         lastCoords = null;
@@ -995,7 +1003,7 @@ function openOrder(order, cardElement = null) {
         stopWaitingTimer(false);
 
         const finalDistance = totalDistance;
-        const rideFare = Math.round((baseFare + (finalDistance * pricePerKm)) / 100) * 100;
+        const rideFare = Math.round((getEffectiveBaseFare() + (finalDistance * pricePerKm)) / 100) * 100;
         const finalAmount = rideFare + waitingCharge;
         const clientId = currentOrderData.clientId;
 
@@ -1043,6 +1051,20 @@ function openOrder(order, cardElement = null) {
         return R * c;
     }
 
+function getEffectiveBaseFare() {
+    const orderType = String(currentOrderData?.type || '').toLowerCase();
+
+    if (
+        orderType === 'dastafka' ||
+        orderType === 'delivery' ||
+        orderType === 'dostavka'
+    ) {
+        return baseFare * 2;
+    }
+
+    return baseFare;
+}
+
     function formatTimeMMSS(totalSeconds) {
         const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
         const ss = String(totalSeconds % 60).padStart(2, '0');
@@ -1050,11 +1072,12 @@ function openOrder(order, cardElement = null) {
     }
 
     function updateTotalDisplayedFare() {
-        const rideFare = Math.round((baseFare + (totalDistance * pricePerKm)) / 100) * 100;
-        const totalFare = rideFare + waitingCharge;
-        currentMoney = totalFare;
-        document.getElementById('cost').innerText = totalFare.toLocaleString();
-    }
+    const effectiveBaseFare = getEffectiveBaseFare();
+    const rideFare = Math.round((effectiveBaseFare + (totalDistance * pricePerKm)) / 100) * 100;
+    const totalFare = rideFare + waitingCharge;
+    currentMoney = totalFare;
+    document.getElementById('cost').innerText = totalFare.toLocaleString();
+}
 
     function startWaitingTimer() {
         stopWaitingTimer();
