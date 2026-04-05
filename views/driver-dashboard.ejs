@@ -590,7 +590,7 @@
             <h3 style="color:var(--gold); margin-bottom:15px;">Yangi Buyurtma! 🚕</h3>
             <p id="modalText" style="color:white; font-size:0.95rem; margin-bottom:20px; line-height:1.6;"></p>
             <div style="display:flex; gap:12px;">
-                <button class="btn" onclick="closeModal()" style="background:#475569; color: white;">O'TKAZISH</button>
+                <button class="btn" onclick="closeModal()" style="background:#475569; color: white;">YOPISH</button>
                 <button class="btn btn-start" id="confirmRideBtn">QABUL QILISH</button>
             </div>
             <div class="timer-bar" id="modalTimerBar"></div>
@@ -707,13 +707,13 @@
     if (!isOnline) return;
 
     addOrderToList(data);
-playAlertSound();
+    playAlertSound();
 
-if (navigator.vibrate) {
-    navigator.vibrate([250, 120, 250, 120, 350]);
-}
+    if (navigator.vibrate) {
+        navigator.vibrate([250, 120, 250, 120, 350]);
+    }
 
-openOrder(data);
+    showToast("Yangi buyurtma ro'yxatga qo'shildi");
 });
 
  function addOrderToList(order) {
@@ -735,6 +735,11 @@ openOrder(data);
 
     const secondsId = `order-seconds-${order.clientId}`;
     const progressId = `order-progress-${order.clientId}`;
+    const normalizedType = String(order.type || '').trim().toLowerCase();
+const typeBadge =
+    normalizedType === 'dastavka' || normalizedType === 'dastafka' || normalizedType === 'dostavka' || normalizedType === 'delivery'
+        ? '📦 Dastavka'
+        : '🚕 Taksi';
 
     card.innerHTML = `
         <div style="flex:1; min-width:0;">
@@ -747,9 +752,10 @@ openOrder(data);
             </div>
 
             <div class="order-meta">
-                <span class="order-chip">📍 ${Number(order.distanceKm || 0).toFixed(1)} km</span>
-                <span class="order-chip">📞 ${order.phone || "Raqam yo'q"}</span>
-            </div>
+    <span class="order-chip">${typeBadge}</span>
+    <span class="order-chip">📍 ${Number(order.distanceKm || 0).toFixed(1)} km</span>
+    <span class="order-chip">📞 ${order.phone || "Raqam yo'q"}</span>
+</div>
 
             <div class="order-note">
                 ${order.address || order.note || "Manzil ko‘rsatilmagan"}
@@ -869,12 +875,18 @@ function removeOrderCard(clientId) {
 
 function openOrder(order, cardElement = null) {
     currentOrderData = order;
+    const normalizedType = String(order.type || '').trim().toLowerCase();
+const orderTypeText =
+    normalizedType === 'dastavka' || normalizedType === 'dastafka' || normalizedType === 'dostavka' || normalizedType === 'delivery'
+        ? '📦 Dastavka'
+        : '🚕 Taksi';
 
     document.getElementById("modalText").innerHTML = `
         <div style="text-align:left; line-height:1.7;">
             <div style="font-size:1.1rem; font-weight:800; color:var(--gold); margin-bottom:10px;">
                 ${order.clientName || "Mijoz"}
             </div>
+            <div style="margin-bottom:8px; color:#93c5fd; font-weight:700;">${orderTypeText}</div>
             <div style="margin-bottom:8px;">📍 <b>Masofa:</b> ${Number(order.distanceKm || 0).toFixed(1)} km</div>
             <div style="margin-bottom:8px;">📞 <b>Telefon:</b> ${order.phone || "Raqam mavjud emas"}</div>
             <div style="margin-bottom:8px;">📌 <b>Manzil:</b> ${order.address || "Ko'rsatilmagan"}</div>
