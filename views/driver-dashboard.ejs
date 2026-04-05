@@ -587,7 +587,7 @@
 
     <div id="orderModal">
         <div class="modal-content">
-            <h3 style="color:var(--gold); margin-bottom:15px;">Yangi Buyurtma! 🚕</h3>
+            <h3 style="color:var(--gold); margin-bottom:15px;">Buyurtma Tafsiloti</h3>
             <p id="modalText" style="color:white; font-size:0.95rem; margin-bottom:20px; line-height:1.6;"></p>
             <div style="display:flex; gap:12px;">
                 <button class="btn" onclick="closeModal()" style="background:#475569; color: white;">YOPISH</button>
@@ -613,7 +613,7 @@
 <script>
     const socket = io();
     const driverId = '<%= driver._id %>';
-    const ORDER_LIFETIME = 15000;
+    const ORDER_LIFETIME = 10000;
     const orderTimers = new Map();
     function setOnlineUIState(online) {
     const statusLabel = document.getElementById('queue-status');
@@ -716,6 +716,32 @@
     showToast("Yangi buyurtma ro'yxatga qo'shildi");
 });
 
+function getOrderTypeInfo(order) {
+    const normalizedType = String(order.type || '').trim().toLowerCase();
+
+    const isDelivery =
+        normalizedType === 'dastavka' ||
+        normalizedType === 'dastafka' ||
+        normalizedType === 'dostavka' ||
+        normalizedType === 'delivery';
+
+    if (isDelivery) {
+        return {
+            isDelivery: true,
+            badge: '📦 Dastavka',
+            icon: '📦',
+            subtext: 'Dastavka buyurtmasi'
+        };
+    }
+
+    return {
+        isDelivery: false,
+        badge: `🚕 ${order.type || 'Taksi'}`,
+        icon: '🚕',
+        subtext: 'Taksi buyurtmasi'
+    };
+}
+
  function addOrderToList(order) {
     const list = document.getElementById("orders-list");
 
@@ -735,6 +761,10 @@
 
     const secondsId = `order-seconds-${order.clientId}`;
     const progressId = `order-progress-${order.clientId}`;
+    const typeInfo = getOrderTypeInfo(order);
+const previewText = typeInfo.isDelivery
+    ? (order.note || "Mijoz izohi yo'q")
+    : (order.type || "Taksi");
     const normalizedType = String(order.type || '').trim().toLowerCase();
 const typeBadge =
     normalizedType === 'dastavka' || normalizedType === 'dastafka' || normalizedType === 'dostavka' || normalizedType === 'delivery'
@@ -742,35 +772,36 @@ const typeBadge =
         : '🚕 Taksi';
 
     card.innerHTML = `
-        <div style="flex:1; min-width:0;">
-            <div class="order-card-header">
-                <div class="order-avatar">🚕</div>
-                <div>
-                    <h4 class="order-client-name">${order.clientName || "Mijoz"}</h4>
-                    <div class="order-subtext">Yangi buyurtma yuborildi</div>
-                </div>
-            </div>
-
-            <div class="order-meta">
-    <span class="order-chip">${typeBadge}</span>
-    <span class="order-chip">📍 ${Number(order.distanceKm || 0).toFixed(1)} km</span>
-    <span class="order-chip">📞 ${order.phone || "Raqam yo'q"}</span>
-</div>
-
-            <div class="order-note">
-                ${order.address || order.note || "Manzil ko‘rsatilmagan"}
+    <div style="flex:1; min-width:0;">
+        <div class="order-card-header">
+            <div class="order-avatar">${typeInfo.icon}</div>
+            <div>
+                <h4 class="order-client-name">${order.clientName || "Mijoz"}</h4>
+                <div class="order-subtext">${typeInfo.subtext}</div>
             </div>
         </div>
 
-        <div class="order-right">
-            <div class="order-timer"><span id="${secondsId}">15</span>s</div>
-            <button type="button" class="view-order-btn">Ko'rish</button>
+        <div class="order-meta">
+            <span class="order-chip">${typeInfo.badge}</span>
+            <span class="order-chip">📍 ${Number(order.distanceKm || 0).toFixed(1)} km</span>
+            <span class="order-chip">📞 ${order.phone || "Raqam yo'q"}</span>
         </div>
 
-        <div class="order-progress-wrap">
-            <div class="order-progress-bar" id="${progressId}"></div>
+        <div class="order-note">
+            ${typeInfo.isDelivery ? "📝 Buyurtma: " : "🚘 Tanlov: "}
+            ${previewText}
         </div>
-    `;
+    </div>
+
+    <div class="order-right">
+        <div class="order-timer"><span id="${secondsId}">10</span>s</div>
+        <button type="button" class="view-order-btn">Ko'rish</button>
+    </div>
+
+    <div class="order-progress-wrap">
+        <div class="order-progress-bar" id="${progressId}"></div>
+    </div>
+`;
 
     const viewBtn = card.querySelector(".view-order-btn");
     viewBtn.addEventListener("click", function (e) {
@@ -881,21 +912,25 @@ const orderTypeText =
         ? '📦 Dastavka'
         : '🚕 Taksi';
 
-    document.getElementById("modalText").innerHTML = `
-        <div style="text-align:left; line-height:1.7;">
-            <div style="font-size:1.1rem; font-weight:800; color:var(--gold); margin-bottom:10px;">
-                ${order.clientName || "Mijoz"}
-            </div>
-            <div style="margin-bottom:8px; color:#93c5fd; font-weight:700;">${orderTypeText}</div>
-            <div style="margin-bottom:8px;">📍 <b>Masofa:</b> ${Number(order.distanceKm || 0).toFixed(1)} km</div>
-            <div style="margin-bottom:8px;">📞 <b>Telefon:</b> ${order.phone || "Raqam mavjud emas"}</div>
-            <div style="margin-bottom:8px;">📌 <b>Manzil:</b> ${order.address || "Ko'rsatilmagan"}</div>
-            <div style="color:#cbd5e1; font-size:0.85rem;">
-                ${order.note || ""}
-            </div>
-        </div>
-    `;
+    const typeInfo = getOrderTypeInfo(order);
+const detailText = typeInfo.isDelivery
+    ? (order.note || "Mijoz izohi yo'q")
+    : (order.type || "Taksi");
 
+document.getElementById("modalText").innerHTML = `
+    <div style="text-align:left; line-height:1.7;">
+        <div style="font-size:1.1rem; font-weight:800; color:var(--gold); margin-bottom:10px;">
+            ${order.clientName || "Mijoz"}
+        </div>
+        <div style="margin-bottom:8px; color:#93c5fd; font-weight:700;">${typeInfo.badge}</div>
+        <div style="margin-bottom:8px;">📍 <b>Masofa:</b> ${Number(order.distanceKm || 0).toFixed(1)} km</div>
+        <div style="margin-bottom:8px;">📞 <b>Telefon:</b> ${order.phone || "Raqam mavjud emas"}</div>
+        <div style="margin-top:12px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.06); color:#e2e8f0; font-size:0.85rem;">
+            <b style="color:var(--gold);">${typeInfo.isDelivery ? "Buyurtma matni" : "Tanlangan mashina"}</b><br>
+            <span style="display:block; margin-top:6px;">${detailText}</span>
+        </div>
+    </div>
+`;
     document.getElementById("confirmRideBtn").onclick = () => {
     acceptOrder(order, cardElement);
 };
