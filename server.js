@@ -255,7 +255,6 @@ app.get("/driver-pwa-install", async (req, res) => {
 app.get("/dashboard", async (req, res) => {
   try {
     const customer = await restoreCustomerSession(req);
-    const settings = await Settings.findOne();
 
     if (!customer) {
       return res.redirect("/mijoz");
@@ -269,14 +268,14 @@ app.get("/dashboard", async (req, res) => {
     const availableCars = [...new Set(onlineDrivers.map(d => d.carModel))];
 
     res.render("dashboard", {
-  customer,
-  settings: {
-    pricePerKm: 1000,
-    baseFare: 3000,
-    waitPrice: 500
-  },
-  availableCars
-});
+      customer,
+      settings: {
+        pricePerKm: 1000,
+        baseFare: 3000,
+        waitPrice: 500
+      },
+      availableCars
+    });
   } catch (err) {
     console.log("Mijoz dashboard xatosi:", err);
     res.status(500).send("Dashboard xatosi");
@@ -315,22 +314,20 @@ app.get("/driver-dashboard", async (req, res) => {
     const driver = await restoreDriverSession(req);
     if (!driver) return res.redirect("/login");
 
-    const settings = await Settings.findOne();
-
     const remainingDays = Math.ceil(
       (driver.subscriptionUntil - new Date()) / (1000 * 60 * 60 * 24)
     );
 
     res.render("driver-dashboard", {
-  driver,
-  settings: {
-    pricePerKm: 1000,
-    baseFare: 3000,
-    waitPrice: 500
-  },
-  remainingDays: remainingDays > 0 ? remainingDays : 0,
-  queuePosition: 0,
-});
+      driver,
+      settings: {
+        pricePerKm: 1000,
+        baseFare: 3000,
+        waitPrice: 500
+      },
+      remainingDays: remainingDays > 0 ? remainingDays : 0,
+      queuePosition: 0,
+    });
   } catch (err) {
     console.log("Dashboard xatosi:", err);
     res.redirect("/login");
@@ -1186,7 +1183,13 @@ app.post("/api/driver-login", async (req, res) => {
 
 app.get("/api/settings", async (req, res) => {
   try {
-    const settings = await Settings.findOne();
-    res.json({ baseFare: settings?.baseFare || 2500, pricePerKm: settings?.pricePerKm || 1000, minDist: settings?.minDist || 2, waitPrice: settings?.waitPrice || 500 });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    res.json({
+      baseFare: 3000,
+      pricePerKm: 1000,
+      minDist: 2,
+      waitPrice: 500
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
