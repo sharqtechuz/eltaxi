@@ -269,10 +269,14 @@ app.get("/dashboard", async (req, res) => {
     const availableCars = [...new Set(onlineDrivers.map(d => d.carModel))];
 
     res.render("dashboard", {
-      customer,
-      settings: settings || { pricePerKm: 1000, baseFare: 2500 },
-      availableCars
-    });
+  customer,
+  settings: {
+    pricePerKm: 1000,
+    baseFare: 3000,
+    waitPrice: 500
+  },
+  availableCars
+});
   } catch (err) {
     console.log("Mijoz dashboard xatosi:", err);
     res.status(500).send("Dashboard xatosi");
@@ -318,11 +322,15 @@ app.get("/driver-dashboard", async (req, res) => {
     );
 
     res.render("driver-dashboard", {
-      driver,
-      settings: settings || { pricePerKm: 1000, baseFare: 2500 },
-      remainingDays: remainingDays > 0 ? remainingDays : 0,
-      queuePosition: 0,
-    });
+  driver,
+  settings: {
+    pricePerKm: 1000,
+    baseFare: 3000,
+    waitPrice: 500
+  },
+  remainingDays: remainingDays > 0 ? remainingDays : 0,
+  queuePosition: 0,
+});
   } catch (err) {
     console.log("Dashboard xatosi:", err);
     res.redirect("/login");
