@@ -280,6 +280,201 @@
 }
         .timer-bar { position: absolute; bottom: 0; left: 0; height: 6px; background: var(--gold); width: 100%; border-radius: 0 0 24px 24px; transition: width 15s linear; }
         #custom-toast { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; padding: 12px 28px; border-radius: 12px; font-weight: bold; z-index: 10002; display: none; }
+                .waiting-card{
+            display:none;
+            margin-top:16px;
+            background: linear-gradient(145deg, rgba(251,191,36,0.10), rgba(15,23,42,0.35));
+            border: 1px solid rgba(251,191,36,0.22);
+            border-radius: 22px;
+            padding: 16px 14px 14px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+            animation: slideIn 0.35s ease;
+        }
+
+        .waiting-card.active-wait{
+            border-color: rgba(239,68,68,0.45);
+            box-shadow: 0 10px 32px rgba(239,68,68,0.16);
+        }
+
+        .waiting-card::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background: radial-gradient(circle at top right, rgba(251,191,36,0.16), transparent 38%);
+            pointer-events:none;
+        }
+
+        .waiting-top{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:12px;
+        }
+
+        .waiting-title{
+            font-size:0.82rem;
+            color:#cbd5e1;
+            letter-spacing:1px;
+            text-transform:uppercase;
+        }
+
+        .waiting-status{
+            font-size:0.78rem;
+            color:var(--gold);
+            font-weight:800;
+        }
+
+        .waiting-status.danger{
+            color:#f87171;
+            animation: pulseWarn 1.1s infinite;
+        }
+
+        .waiting-main{
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+
+        .countdown-ring{
+            width:90px;
+            height:90px;
+            position:relative;
+            flex-shrink:0;
+        }
+
+        .countdown-ring svg{
+            width:90px;
+            height:90px;
+            transform: rotate(-90deg);
+            overflow: visible;
+        }
+
+        .countdown-ring .track{
+            fill:none;
+            stroke: rgba(255,255,255,0.08);
+            stroke-width: 8;
+        }
+
+        .countdown-ring .progress{
+            fill:none;
+            stroke: #fbbf24;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 238.76;
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 8px rgba(251,191,36,0.38));
+            transition: stroke 0.25s ease;
+        }
+
+        .countdown-ring.danger .progress{
+            stroke:#ef4444;
+            filter: drop-shadow(0 0 10px rgba(239,68,68,0.45));
+        }
+
+        .countdown-center{
+            position:absolute;
+            inset:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            text-align:center;
+        }
+
+        .countdown-time{
+            font-size:1rem;
+            font-weight:900;
+            color:#fff;
+            line-height:1;
+        }
+
+        .countdown-label{
+            margin-top:4px;
+            font-size:0.6rem;
+            color:#94a3b8;
+            letter-spacing:1px;
+            text-transform:uppercase;
+        }
+
+        .waiting-details{
+            flex:1;
+            min-width:0;
+            text-align:left;
+        }
+
+        .waiting-big{
+            font-size:1rem;
+            font-weight:800;
+            color:#fff;
+            margin-bottom:6px;
+        }
+
+        .waiting-small{
+            font-size:0.76rem;
+            color:#94a3b8;
+            line-height:1.45;
+        }
+
+        .waiting-money-box{
+            margin-top:12px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            background: rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:14px;
+            padding:10px 12px;
+        }
+
+        .waiting-money-label{
+            font-size:0.78rem;
+            color:#cbd5e1;
+        }
+
+        .waiting-money-value{
+            font-size:1rem;
+            font-weight:900;
+            color:var(--gold);
+        }
+
+        .waiting-money-value.danger{
+            color:#f87171;
+        }
+
+        .waiting-free-badge{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            margin-top:10px;
+            padding:7px 10px;
+            border-radius:999px;
+            background: rgba(34,197,94,0.10);
+            border: 1px solid rgba(34,197,94,0.22);
+            color:#86efac;
+            font-size:0.72rem;
+            font-weight:700;
+        }
+
+        .waiting-card.flash-end{
+            animation: endFlash 0.7s ease;
+        }
+
+        @keyframes pulseWarn {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.04); opacity: 0.85; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes endFlash {
+            0% { box-shadow: 0 0 0 rgba(239,68,68,0); }
+            35% { box-shadow: 0 0 26px rgba(239,68,68,0.38); }
+            100% { box-shadow: 0 10px 32px rgba(239,68,68,0.16); }
+        }
+
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -326,6 +521,38 @@
             <div class="taximeter-box">
                 <div class="price" id="cost">0</div>
                 <span class="currency" id="price-label">SO'M</span>
+                                <div class="waiting-card" id="waitingCard">
+                    <div class="waiting-top">
+                        <div class="waiting-title">Kutish taymeri</div>
+                        <div class="waiting-status" id="waitingStatus">Bepul kutish</div>
+                    </div>
+
+                    <div class="waiting-main">
+                        <div class="countdown-ring" id="countdownRing">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="track" cx="50" cy="50" r="38"></circle>
+                                <circle class="progress" id="countdownProgress" cx="50" cy="50" r="38"></circle>
+                            </svg>
+                            <div class="countdown-center">
+                                <div class="countdown-time" id="countdownTime">02:00</div>
+                                <div class="countdown-label" id="countdownLabel">Bepul</div>
+                            </div>
+                        </div>
+
+                        <div class="waiting-details">
+                            <div class="waiting-big" id="waitingMainText">Mijozni 2 daqiqa bepul kutish</div>
+                            <div class="waiting-small" id="waitingSubText">
+                                Vaqt tugagach kutish narxi avtomatik jami summaga qo‘shilib boradi.
+                            </div>
+                            <div class="waiting-free-badge" id="waitingBadge">⏳ Bepul kutish davom etmoqda</div>
+                        </div>
+                    </div>
+
+                    <div class="waiting-money-box">
+                        <div class="waiting-money-label">Kutish narxi</div>
+                        <div class="waiting-money-value" id="waitingMoney">0 so'm</div>
+                    </div>
+                </div>
                 <div class="btn-group">
                  <button class="btn btn-start" id="startBtn" onclick="startRide()" style="display:none;">MIJOZ O'TIRDI</button>
                 <button class="btn btn-stop" id="stopBtn" onclick="stopRide()" style="display:none;">SAFARNI TUGATISH</button>
@@ -394,7 +621,7 @@
 }
     
     // O'zgaruvchilar
-    let isOnline = false;
+       let isOnline = false;
     let watchId = null;
     let totalDistance = 0;
     let lastCoords = null;
@@ -403,9 +630,17 @@
     let timerInterval = null;
     let locationInterval = null;
 
+    let waitingTimer = null;
+    let waitingStartedAt = null;
+    let freeWaitSeconds = 120;
+    let waitingCharge = 0;
+    let waitingSecondsPassed = 0;
+    let isWaitingActive = false;
+
     // Narxlar (Serverdan kelgan)
-    const pricePerKm = Number('<%= settings.pricePerKm %>') || 1000;
-    const baseFare = 2500;
+        const pricePerKm = Number('<%= settings.pricePerKm %>') || 1000;
+    const baseFare = Number('<%= settings.baseFare %>') || 2500;
+    const waitPricePerMinute = Number('<%= settings.waitPrice %>') || 500;
     // 1. ONLINE/OFFLINE REJIM
     document.getElementById('online-switch').addEventListener('change', function() {
     const statusLabel = document.getElementById('queue-status');
@@ -674,90 +909,109 @@ function openOrder(order, cardElement = null) {
 }
 
     // 5. "KELDIM" TUGMASI
-    function sendArrivedMsg() {
+        function sendArrivedMsg() {
         if (!currentOrderData) return;
+
         socket.emit('driver_arrived', { clientId: currentOrderData.clientId });
+        startWaitingTimer();
+
+        document.getElementById('startBtn').style.display = 'block';
         showToast("Mijozga xabar yuborildi!");
     }
 
     // 6. TAKSOMETRNI BOSHLASH
-    function startRide() {
+        function startRide() {
+        if (!currentOrderData) return;
+
         socket.emit('taximeter_on', { clientId: currentOrderData.clientId });
-        
+
+        stopWaitingTimer(false);
+
         document.getElementById('activeOrderBox').style.display = 'none';
         document.getElementById('startBtn').style.display = "none";
         document.getElementById('stopBtn').style.display = "block";
-        
+
         totalDistance = 0;
-        currentMoney = baseFare;
+        currentMoney = baseFare + waitingCharge;
         document.getElementById('cost').innerText = currentMoney.toLocaleString();
-        
+
         lastCoords = null;
         startTaxisometrTracking();
     }
 
     // 7. REAL-VAQTDA MASOFANI O'LCHASH (TAKSOMETR)
-    function startTaxisometrTracking() {
-        if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-        
+        function startTaxisometrTracking() {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
         watchId = navigator.geolocation.watchPosition((pos) => {
             const current = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-            
+
             if (lastCoords) {
                 const dist = calculateDistance(lastCoords.lat, lastCoords.lon, current.lat, current.lon);
-                
-                // Faqat 10 metrdan ko'p yursa hisoblaydi (sakrashlarni oldini olish uchun)
+
+                // Faqat 10 metrdan ko'p yursa hisoblaydi
                 if (dist > 0.01 && dist < 1) {
                     totalDistance += dist;
-                    currentMoney = baseFare + (totalDistance * pricePerKm);
-                    
-                    // Pulni yaxlitlash (masalan: 12,450 -> 12,500)
-                    const roundedMoney = Math.round(currentMoney / 100) * 100;
-                    document.getElementById('cost').innerText = roundedMoney.toLocaleString();
+                    updateTotalDisplayedFare();
+                    document.getElementById('waitingMoney').innerText = `${waitingCharge.toLocaleString()} so'm`;
                 }
             }
+
             lastCoords = current;
         }, (err) => console.error(err), { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
     }
 
     // 8. SAFARNI TUGATISH
-    function stopRide() {
-    if (!currentOrderData) return;
+        function stopRide() {
+        if (!currentOrderData) return;
 
-    if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
+        stopWaitingTimer(false);
+
+        const finalDistance = totalDistance;
+        const rideFare = Math.round((baseFare + (finalDistance * pricePerKm)) / 100) * 100;
+        const finalAmount = rideFare + waitingCharge;
+        const clientId = currentOrderData.clientId;
+
+        socket.emit('finish_trip_and_pay', {
+            driverId,
+            clientId,
+            amount: finalAmount,
+            distance: finalDistance.toFixed(2),
+            waitingAmount: waitingCharge,
+            waitingSeconds: waitingSecondsPassed
+        });
+
+        document.getElementById('final-dist').innerText = finalDistance.toFixed(2);
+        document.getElementById('final-amount').innerText = finalAmount.toLocaleString() + " so'm";
+        document.getElementById('finishModal').style.display = "flex";
+
+        document.getElementById('activeOrderBox').style.display = 'none';
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'none';
+
+        currentOrderData = null;
+        totalDistance = 0;
+        lastCoords = null;
+        currentMoney = 0;
+        waitingCharge = 0;
+        waitingSecondsPassed = 0;
+        waitingStartedAt = null;
+        document.getElementById('waitingCard').style.display = 'none';
+        document.getElementById('waitingMoney').innerText = "0 so'm";
+
+        if (isOnline) {
+            document.getElementById('queue-status').innerText = "Navbatda: Buyurtma kutmoqda...";
+            document.getElementById('queue-status').style.color = "var(--green)";
+        }
     }
-
-    const finalDistance = totalDistance;
-    const finalAmount = Math.round((baseFare + (finalDistance * pricePerKm)) / 100) * 100;
-    const clientId = currentOrderData.clientId;
-
-    socket.emit('finish_trip_and_pay', { 
-        driverId,
-        clientId,
-        amount: finalAmount,
-        distance: finalDistance.toFixed(2)
-    });
-
-    document.getElementById('final-dist').innerText = finalDistance.toFixed(2);
-    document.getElementById('final-amount').innerText = finalAmount.toLocaleString() + " so'm";
-    document.getElementById('finishModal').style.display = "flex";
-
-    document.getElementById('activeOrderBox').style.display = 'none';
-    document.getElementById('startBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'none';
-
-    currentOrderData = null;
-    totalDistance = 0;
-    lastCoords = null;
-    currentMoney = 0;
-
-     if (isOnline) {
-    document.getElementById('queue-status').innerText = "Navbatda: Buyurtma kutmoqda...";
-    document.getElementById('queue-status').style.color = "var(--green)";
-}
-}
 
     // MATEMATIK FUNKSIYALAR
     function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -768,6 +1022,126 @@ function openOrder(order, cardElement = null) {
                   Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         return R * c;
+    }
+
+    function formatTimeMMSS(totalSeconds) {
+        const mm = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const ss = String(totalSeconds % 60).padStart(2, '0');
+        return `${mm}:${ss}`;
+    }
+
+    function updateTotalDisplayedFare() {
+        const rideFare = Math.round((baseFare + (totalDistance * pricePerKm)) / 100) * 100;
+        const totalFare = rideFare + waitingCharge;
+        currentMoney = totalFare;
+        document.getElementById('cost').innerText = totalFare.toLocaleString();
+    }
+
+    function startWaitingTimer() {
+        stopWaitingTimer();
+
+        isWaitingActive = true;
+        waitingStartedAt = Date.now();
+        waitingCharge = 0;
+        waitingSecondsPassed = 0;
+
+        const waitingCard = document.getElementById('waitingCard');
+        const waitingStatus = document.getElementById('waitingStatus');
+        const countdownTime = document.getElementById('countdownTime');
+        const countdownLabel = document.getElementById('countdownLabel');
+        const waitingMainText = document.getElementById('waitingMainText');
+        const waitingSubText = document.getElementById('waitingSubText');
+        const waitingBadge = document.getElementById('waitingBadge');
+        const waitingMoney = document.getElementById('waitingMoney');
+        const countdownProgress = document.getElementById('countdownProgress');
+        const countdownRing = document.getElementById('countdownRing');
+
+        waitingCard.style.display = 'block';
+        waitingCard.classList.remove('active-wait', 'flash-end');
+        waitingStatus.classList.remove('danger');
+        waitingMoney.classList.remove('danger');
+        countdownRing.classList.remove('danger');
+
+        waitingStatus.innerText = 'Bepul kutish';
+        countdownLabel.innerText = 'Bepul';
+        waitingMainText.innerText = "Mijozni 2 daqiqa bepul kutish";
+        waitingSubText.innerText = "Vaqt tugagach kutish narxi avtomatik jami summaga qo‘shilib boradi.";
+        waitingBadge.style.display = 'inline-flex';
+        waitingBadge.innerText = '⏳ Bepul kutish davom etmoqda';
+        waitingMoney.innerText = "0 so'm";
+        countdownTime.innerText = '02:00';
+        countdownProgress.style.strokeDashoffset = '0';
+
+        const circumference = 2 * Math.PI * 38;
+
+        waitingTimer = setInterval(() => {
+            const elapsedSeconds = Math.floor((Date.now() - waitingStartedAt) / 1000);
+            waitingSecondsPassed = elapsedSeconds;
+
+            if (elapsedSeconds < freeWaitSeconds) {
+                const remaining = freeWaitSeconds - elapsedSeconds;
+                const progress = elapsedSeconds / freeWaitSeconds;
+
+                countdownTime.innerText = formatTimeMMSS(remaining);
+                countdownProgress.style.strokeDashoffset = String(circumference * progress);
+
+                if (remaining <= 15) {
+                    waitingStatus.classList.add('danger');
+                    countdownRing.classList.add('danger');
+                    waitingStatus.innerText = 'Tugash arafasida';
+                    countdownLabel.innerText = 'Tayyor';
+                    waitingMainText.innerText = "Bepul kutish tugashiga oz qoldi";
+                    waitingBadge.innerText = '⚠️ 15 soniya qoldi';
+                }
+            } else {
+                const paidSeconds = elapsedSeconds - freeWaitSeconds;
+                const paidMinutes = Math.ceil(paidSeconds / 60);
+                const newWaitingCharge = Math.max(0, paidMinutes * waitPricePerMinute);
+
+                if (newWaitingCharge !== waitingCharge) {
+                    waitingCharge = newWaitingCharge;
+                    updateTotalDisplayedFare();
+                }
+
+                countdownTime.innerText = formatTimeMMSS(paidSeconds);
+                countdownLabel.innerText = 'Kutish';
+                waitingStatus.innerText = 'Kutish narxi qo‘shilmoqda';
+                waitingStatus.classList.add('danger');
+                countdownRing.classList.add('danger');
+                waitingCard.classList.add('active-wait');
+                waitingBadge.style.display = 'none';
+                waitingMainText.innerText = "Ojидание hisoblanmoqda";
+                waitingSubText.innerText = `Har boshlangan daqiqaga ${waitPricePerMinute.toLocaleString()} so'm qo‘shiladi.`;
+                waitingMoney.innerText = `${waitingCharge.toLocaleString()} so'm`;
+                waitingMoney.classList.add('danger');
+                countdownProgress.style.strokeDashoffset = String(circumference);
+
+                if (!waitingCard.classList.contains('flash-end')) {
+                    waitingCard.classList.add('flash-end');
+                    setTimeout(() => waitingCard.classList.remove('flash-end'), 800);
+                }
+            }
+        }, 1000);
+    }
+
+    function stopWaitingTimer(resetUI = true) {
+        if (waitingTimer) {
+            clearInterval(waitingTimer);
+            waitingTimer = null;
+        }
+
+        isWaitingActive = false;
+
+        if (resetUI) {
+            document.getElementById('waitingCard').style.display = 'none';
+            document.getElementById('waitingStatus').classList.remove('danger');
+            document.getElementById('waitingMoney').classList.remove('danger');
+            document.getElementById('countdownRing').classList.remove('danger');
+            document.getElementById('waitingCard').classList.remove('active-wait', 'flash-end');
+            document.getElementById('countdownTime').innerText = '02:00';
+            document.getElementById('countdownLabel').innerText = 'Bepul';
+            document.getElementById('waitingMoney').innerText = "0 so'm";
+        }
     }
 
     function playAlertSound() {
@@ -796,6 +1170,10 @@ function openOrder(order, cardElement = null) {
 function closeFinishModal() {
     document.getElementById('finishModal').style.display = 'none';
     document.getElementById('cost').innerText = '0';
+        stopWaitingTimer(true);
+    waitingCharge = 0;
+    waitingSecondsPassed = 0;
+    waitingStartedAt = null;
 
     if (isOnline) {
         document.getElementById('orders-box').style.display = 'block';
